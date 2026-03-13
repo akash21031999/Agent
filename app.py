@@ -1,5 +1,5 @@
 """
-Alpha Machine v3 — Fixed & MCP Ready
+Alpha Machine v3 — Institutional Intelligence Dashboard
 """
 import streamlit as st
 import pandas as pd
@@ -8,42 +8,43 @@ from google import genai
 from google.genai import types
 
 # ══════════════════════════════════════════════════════════════════════════════
-# 1. CORE AI ENGINE (Fixed)
+# 1. CORE ENGINE (FIXED)
 # ══════════════════════════════════════════════════════════════════════════════
-def call_gemini(system, user, key):
-    if not key:
+def call_gemini(system_prompt, user_prompt, api_key):
+    if not api_key:
         return "⚠️ Please enter your Gemini API Key in the sidebar."
     try:
-        client = genai.Client(api_key=key)
+        client = genai.Client(api_key=api_key)
         response = client.models.generate_content(
-            model="gemini-2.5-flash",
+            model="gemini-2.5-flash", 
             config=types.GenerateContentConfig(
-                system_instruction=system,
+                system_instruction=system_prompt,
                 temperature=0.7
             ),
-            contents=user
+            contents=user_prompt
         )
         return response.text
     except Exception as e:
-        return f"❌ Error: {str(e)}"
+        return f"❌ AI Engine Error: {str(e)}"
 
 # ══════════════════════════════════════════════════════════════════════════════
-# 2. FIXED RESEARCH MODES (Passing 'key' correctly now)
+# 2. FIXED RESEARCH MODES
 # ══════════════════════════════════════════════════════════════════════════════
 
 def run_supply_chain(key, target):
-    system = """You are a world-class Supply Chain Intelligence Analyst. 
-    Format your output with bold tickers like **$ASML** or **$KLAC**.
-    Focus on hidden asymmetric bets, precision manufacturing, and infrastructure mainstays."""
-    user = f"Map the complete ecosystem for {target}. Find obscure bottlenecks and emerging winners."
-    return call_gemini(system, user, key) # Fixed: key added
+    system = "You are a Supply Chain Intelligence Analyst. Use bold tickers like **$ASML**."
+    user = f"Map the ecosystem for {target}. Identify asymmetric bets and bottlenecks."
+    return call_gemini(system, user, key)
 
-def run_macro_intelligence(key, theme):
-    system = "You are a Macro Strategist. Map rotation and liquidity flows."
-    user = f"Analyze the macro impact of: {theme}"
-    return call_gemini(system, user, key) # Fixed: key added
+def run_macro_intel(key, theme):
+    system = "You are a Macro Strategist. Analyze DXY, VIX, and Bond Yield correlations."
+    user = f"Analyze the macro regime for: {theme}"
+    return call_gemini(system, user, key)
 
-# [Repeat this 'key' fix for all other modes: commodity, portfolio, etc.]
+def run_social_agent(key, content):
+    system = "You are a viral financial ghostwriter for X and LinkedIn."
+    user = f"Convert this research into a viral thread and a LinkedIn post: {content}"
+    return call_gemini(system, user, key)
 
 # ══════════════════════════════════════════════════════════════════════════════
 # 3. STREAMLIT UI
@@ -51,22 +52,29 @@ def run_macro_intelligence(key, theme):
 st.set_page_config(page_title="Alpha Machine v3", layout="wide")
 
 with st.sidebar:
-    st.title("🛡️ Alpha Machine")
+    st.title("🛡️ Control Center")
     gemini_key = st.text_input("Gemini API Key", type="password")
+    st.divider()
     st.info("MCP Server: Connected (Local)")
 
 tab1, tab2, tab3 = st.tabs(["🔍 Intelligence", "🔗 Supply Chain", "📱 Monetize"])
 
+with tab1:
+    theme = st.text_input("Macro Theme (e.g., 'Fed Pivot', 'AI Energy'):")
+    if st.button("Analyze Macro"):
+        with st.spinner("Crunching DXY, VIX, and Yields..."):
+            st.markdown(run_macro_intel(gemini_key, theme))
+
 with tab2:
-    st.subheader("🔗 Supply Chain Intelligence")
-    supply_target = st.text_input("Enter Target (e.g., 'Advanced Packaging', 'NVIDIA'):")
-    if st.button("Analyze Ecosystem"):
-        with st.spinner("Mapping..."):
-            result = run_supply_chain(gemini_key, supply_target)
-            st.markdown(result) # This will now display correctly
+    target = st.text_input("Target Ticker/Sector (e.g., 'ASML', 'Nuclear SMR'):")
+    if st.button("Map Supply Chain"):
+        with st.spinner("Finding Bottlenecks..."):
+            st.session_state.last_research = run_supply_chain(gemini_key, target)
+            st.markdown(st.session_state.last_research)
 
 with tab3:
-    st.subheader("Automated Distribution")
-    if st.button("Generate X/LinkedIn Thread"):
-        # Logic to transform the last research into a post
-        st.write("Generating...")
+    if "last_research" in st.session_state:
+        if st.button("Generate Viral Posts"):
+            st.code(run_social_agent(gemini_key, st.session_state.last_research))
+    else:
+        st.warning("Run research in Tab 1 or 2 first.")
