@@ -1,10 +1,6 @@
-# Alpha Machine — Python 3.14 compatible, no crewai
-yfinance==0.2.51
-aiohttp>=3.9.0
+# Alpha Machine — Python 3.14 compatible
 requests>=2.31.0
 feedparser>=6.0.10
-schedule>=1.2.0
 python-dotenv>=1.0.0
 streamlit>=1.32.0
 pandas>=2.0.0
-nest-asyncio>=1.6.0
