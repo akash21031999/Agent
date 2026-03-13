@@ -55,8 +55,8 @@ st.markdown(f'<p class="sub">Multi-Agent Asymmetric Bet Scanner &nbsp;·&nbsp; {
 
 # ── SIDEBAR ───────────────────────────────────────────────────────────────────
 with st.sidebar:
-    st.markdown("### ⚙️ DeepSeek API")
-    deepseek_key = st.text_input("API Key", type="password", placeholder="sk-...")
+    st.markdown("### ⚙️ Gemini API (Free)")
+    gemini_key = st.text_input("API Key", type="password", placeholder="AIza...")
     st.markdown("### 📱 Telegram Alerts")
     tg_token = st.text_input("Bot Token",  type="password")
     tg_chat  = st.text_input("Chat ID",    placeholder="-100123456789")
@@ -65,7 +65,7 @@ with st.sidebar:
     sectors_raw = st.text_area("Sector ETFs", value="XLK,XLE,XLF,XLV,XBI,ARKK,GDX,COPX,ITB,XAR",      height=85)
     st.markdown("---")
     run_btn = st.button("🚀 Run Alpha Scan", type="primary", use_container_width=True)
-    st.caption("~2-3 min · 5 parallel agents · DeepSeek-R1")
+    st.caption("~2-3 min · 5 parallel agents · Gemini 2.0 Flash")
 
 STOCKS  = [s.strip() for s in stocks_raw.split(",")  if s.strip()]
 SECTORS = [s.strip() for s in sectors_raw.split(",") if s.strip()]
@@ -223,31 +223,35 @@ def get_news(query, n=10):
     except:
         return []
 
-# ── DEEPSEEK — synchronous (no asyncio, no aiohttp) ──────────────────────────
+# ── GEMINI 2.0 FLASH — free tier, synchronous ────────────────────────────────
+# Free limits: 15 req/min · 1,500 req/day · 1M tokens/min
+# Get free key: https://aistudio.google.com/app/apikey
 
-def call_deepseek(system, user, key, max_tokens=2500):
-    """Pure synchronous requests call to DeepSeek."""
+GEMINI_URL = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent"
+
+def call_gemini(system, user, key):
+    """Synchronous call to Gemini 2.0 Flash — completely free."""
     try:
         r = requests.post(
-            "https://api.deepseek.com/v1/chat/completions",
-            headers={"Authorization": f"Bearer {key}", "Content-Type": "application/json"},
+            f"{GEMINI_URL}?key={key}",
+            headers={"Content-Type": "application/json"},
             json={
-                "model": "deepseek-reasoner",
-                "max_tokens": max_tokens,
-                "temperature": 0.3,
-                "messages": [
-                    {"role": "system", "content": system},
-                    {"role": "user",   "content": user},
-                ],
+                "system_instruction": {"parts": [{"text": system}]},
+                "contents": [{"role": "user", "parts": [{"text": user}]}],
+                "generationConfig": {
+                    "temperature": 0.3,
+                    "maxOutputTokens": 3000,
+                },
             },
-            timeout=180,
+            timeout=120,
         )
-        d  = r.json()
-        ch = d.get("choices", [])
-        if not ch:
-            return f"[API error: {d.get('error', {}).get('message', str(d))}]"
-        m = ch[0]["message"]
-        return m.get("content") or m.get("reasoning_content", "[empty response]")
+        d = r.json()
+        if "error" in d:
+            return f"[API error: {d['error'].get('message', str(d['error']))}]"
+        try:
+            return d["candidates"][0]["content"]["parts"][0]["text"]
+        except (KeyError, IndexError):
+            return f"[Unexpected response: {str(d)[:300]}]"
     except Exception as e:
         return f"[Request failed: {e}]"
 
@@ -272,7 +276,7 @@ For each tailwind:
 - Single kill risk
 
 Be specific and actionable. Plain text only."""
-    results["macro"] = call_deepseek(
+    results["macro"] = call_gemini(
         "You are a global macro strategist. Think Ray Dalio — debt cycles, capital flows, geopolitics. Find invisible forces moving markets before the crowd.",
         prompt, key)
 
@@ -289,9 +293,8 @@ Identify TOP 2 sectors in EARLY institutional accumulation (not crowded yet).
 Look for: weakest 1M performance that's now turning, positive news flow, macro tailwind alignment.
 For each: ETF ticker, theme, why it's early-stage, macro driver, score 1-10.
 Plain text only."""
-    results["sector"] = call_deepseek(
-        "You are a sector rotation specialist. Find sectors before ETF inflows show on Bloomberg. Sectors move with macro; stocks move with sectors.",
-        prompt, key)
+    results["sector"] = call_gemini(
+        "You are a sector rotation specialist. Find sectors before ETF inflows show on Bloomberg. Sectors move with macro; stocks move with sectors.", prompt, key)
 
 def agent_stocks(key, results, df_stocks, news_catalyst):
     prompt = f"""Date: {datetime.now().strftime('%Y-%m-%d')}
@@ -312,9 +315,8 @@ Find TOP 3 stocks where 3+ signals STACK simultaneously:
 For each pick: ticker, stacked signals list, specific catalyst + expected date,
 entry rationale, asymmetry score 1-10, time horizon.
 Plain text only."""
-    results["stocks"] = call_deepseek(
-        "You are a stock catalyst specialist. Find asymmetric setups where multiple signals stack. You obsess over risk/reward ratios.",
-        prompt, key)
+    results["stocks"] = call_gemini(
+        "You are a stock catalyst specialist. Find asymmetric setups where multiple signals stack. You obsess over risk/reward ratios.", prompt, key)
 
 def agent_contra(key, results, df_stocks, news_bear):
     prompt = f"""Date: {datetime.now().strftime('%Y-%m-%d')}
@@ -334,9 +336,8 @@ Stress-test each stock in the watchlist:
 
 Flag any AVOID verdict prominently. Be the devil's advocate.
 Plain text only."""
-    results["contra"] = call_deepseek(
-        "You are a contrarian short-seller. Stress-test every bull thesis relentlessly. Only truly asymmetric bets survive your filter.",
-        prompt, key)
+    results["contra"] = call_gemini(
+        "You are a contrarian short-seller. Stress-test every bull thesis relentlessly. Only truly asymmetric bets survive your filter.", prompt, key)
 
 def agent_thesis(key, results):
     prompt = f"""Date: {datetime.now().strftime('%Y-%m-%d')}
@@ -375,7 +376,7 @@ FORMAT each qualifying bet EXACTLY like this:
 After all bets add:
 📋 PORTFOLIO NOTE: [correlation between bets, concentrated or hedged?]
 🌍 MACRO REGIME: [one sentence — current market backdrop]"""
-    results["thesis"] = call_deepseek(
+    results["thesis"] = call_gemini(
         "You are the CIO of a macro hedge fund. Distill 4 analyst reports into razor-sharp, actionable investment theses. No fluff. Only alpha scoring 7+/10.",
         prompt, key, max_tokens=3000)
 
@@ -463,8 +464,8 @@ with tab1:
                 if isinstance(v, (int, float)):
                     return "color:#10b981;font-weight:600" if v > 0 else "color:#ef4444;font-weight:600"
                 return ""
-            st.dataframe(df_sec.style.applymap(csec, subset=["1M%","1W%"]),
-                         use_container_width=True, hide_index=True, height=370)
+            st.dataframe(df_sec.style.map(csec, subset=["1M%","1W%"]),
+                         width="stretch", hide_index=True, height=370)
         else:
             st.warning("Sector data temporarily unavailable")
 
@@ -482,10 +483,9 @@ with tab1:
                 if isinstance(v, (int, float)):
                     return "color:#10b981" if v > 0 else "color:#ef4444"
                 return ""
-            numeric_cols = [c for c in ["1M%","RSI"] if c in df_st.columns]
             st.dataframe(
-                df_st.style.applymap(crsi, subset=["RSI"]).applymap(cm1, subset=["1M%"]),
-                use_container_width=True, hide_index=True, height=370
+                df_st.style.map(crsi, subset=["RSI"]).map(cm1, subset=["1M%"]),
+                width="stretch", hide_index=True, height=370
             )
         else:
             st.warning("Stock data temporarily unavailable")
@@ -512,7 +512,7 @@ with tab2:
     st.divider()
 
     if not run_btn:
-        st.info("👈 Enter your **DeepSeek API key** in the sidebar, then click **Run Alpha Scan**")
+        st.info("👈 Enter your **Gemini API key** in the sidebar, then click **Run Alpha Scan**")
         with st.expander("📋 Example output"):
             st.code("""🎯 ASYMMETRIC BET: RKLB
 📊 THEME: Space defense + smallsat boom + DoD tailwind
@@ -529,8 +529,8 @@ with tab2:
 🌍 MACRO REGIME: Risk-on, rate cut expectations supporting growth/tech rotation""", language=None)
 
     if run_btn:
-        if not deepseek_key:
-            st.error("⚠️ DeepSeek API key required — add it in the sidebar.")
+        if not gemini_key:
+            st.error("⚠️ Gemini API key required — add it in the sidebar.")
         else:
             # Load market data first
             with st.spinner("📡 Fetching live market data..."):
@@ -559,7 +559,7 @@ with tab2:
 
             try:
                 p1.progress(20, text="Agents running (2-3 min)...")
-                results = run_parallel_scan(deepseek_key, df_stocks, df_sectors)
+                results = run_parallel_scan(gemini_key, df_stocks, df_sectors)
                 p1.progress(85, text="Writing final thesis...")
 
                 # Update agent status cards
@@ -636,11 +636,11 @@ with tab3:
 - Score 7+/10 across: Asymmetry · Catalyst Clarity · Macro Alignment
 - Survives the Contrarian stress test (no AVOID verdict)
 
-**Cost estimate:** DeepSeek-R1 ~$0.005 per full scan → 3 scans/day ≈ **$0.45/month**
+**Cost:** Gemini 2.0 Flash is **completely FREE** — 1,500 requests/day, no billing needed
     """)
     st.markdown("## 🔑 Setup")
     st.markdown("""
-**DeepSeek API** → [platform.deepseek.com](https://platform.deepseek.com) → API Keys → Create new key
+**Gemini API Key** → [aistudio.google.com](https://aistudio.google.com/app/apikey) → **Create API Key** → completely free, no billing needed
 
 **Telegram Bot:**
 1. Message [@BotFather](https://t.me/BotFather) on Telegram → `/newbot`
