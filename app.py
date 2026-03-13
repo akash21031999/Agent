@@ -65,7 +65,7 @@ with st.sidebar:
     sectors_raw = st.text_area("Sector ETFs", value="XLK,XLE,XLF,XLV,XBI,ARKK,GDX,COPX,ITB,XAR",      height=85)
     st.markdown("---")
     run_btn = st.button("🚀 Run Alpha Scan", type="primary", use_container_width=True)
-    st.caption("~2-3 min · 5 parallel agents · Gemini 2.0 Flash")
+    st.caption("~2-3 min · 5 parallel agents · Gemini 2.0 Flash Lite")
 
 STOCKS  = [s.strip() for s in stocks_raw.split(",")  if s.strip()]
 SECTORS = [s.strip() for s in sectors_raw.split(",") if s.strip()]
@@ -227,10 +227,10 @@ def get_news(query, n=10):
 # Free limits: 15 req/min · 1,500 req/day · 1M tokens/min
 # Get free key: https://aistudio.google.com/app/apikey
 
-GEMINI_URL = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent"
+GEMINI_URL = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-lite:generateContent"
 
 def call_gemini(system, user, key):
-    """Synchronous call to Gemini 2.0 Flash — completely free."""
+    """Synchronous call to Gemini 2.0 Flash Lite — completely free."""
     try:
         r = requests.post(
             f"{GEMINI_URL}?key={key}",
@@ -636,7 +636,7 @@ with tab3:
 - Score 7+/10 across: Asymmetry · Catalyst Clarity · Macro Alignment
 - Survives the Contrarian stress test (no AVOID verdict)
 
-**Cost:** Gemini 2.0 Flash is **completely FREE** — 1,500 requests/day, no billing needed
+**Cost:** Gemini 2.0 Flash Lite is **completely FREE** — 1,500 requests/day, no billing needed
     """)
     st.markdown("## 🔑 Setup")
     st.markdown("""
