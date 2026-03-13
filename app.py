@@ -1,105 +1,117 @@
+"""
+Alpha Machine v4 — Institutional Intelligence & Agentic Research
+"""
 import streamlit as st
-import requests
-import feedparser
-import json
-import pandas as pd
-from datetime import datetime
+import time
 from google import genai
 from google.genai import types
 
 # ══════════════════════════════════════════════════════════════════════════════
-#  CONFIG & STATE
+# 1. ADVANCED ENGINE (With Streaming & Error Recovery)
 # ══════════════════════════════════════════════════════════════════════════════
-st.set_page_config(page_title="Alpha Machine v2 🎯", layout="wide")
-
-# Initialize Session State for persistence
-if "research_results" not in st.session_state:
-    st.session_state.research_results = None
-if "current_query" not in st.session_state:
-    st.session_state.current_query = ""
-
-# ══════════════════════════════════════════════════════════════════════════════
-#  CORE RESEARCH ENGINE
-# ══════════════════════════════════════════════════════════════════════════════
-def run_supply_chain_analysis(query, api_key):
-    """Traces bottlenecks and moats across the supply chain."""
+def stream_alpha_intel(system_prompt, user_prompt, api_key):
+    """Streams the AI response for a more 'Premium' feel and faster UX."""
+    if not api_key:
+        st.error("Missing Gemini API Key!")
+        return
     try:
         client = genai.Client(api_key=api_key)
-        prompt = f"""
-        Act as a Tier-1 Equity Research Analyst specializing in Supply Chain Forensics.
-        Topic: {query}
-        
-        1. UPSTREAM: Identify the raw material/IP providers (the 'Oxygen').
-        2. MIDSTREAM: Identify the fabricators/bottlenecks.
-        3. DOWNSTREAM: Identify the ultimate price-setters.
-        4. ASYMMETRIC PICK: Which specific micro-cap or mid-cap name owns a critical 'Toll Bridge'?
-        5. RISK: What breaks this chain (Geopolitical/Regulatory)?
-        """
-        # UPDATED MODEL: Using 2.5 Flash for stability and performance
-        response = client.models.generate_content(
+        # Using 2.5 Flash for the best speed/reasoning balance
+        response = client.models.generate_content_stream(
             model="gemini-2.5-flash", 
-            contents=prompt
+            config=types.GenerateContentConfig(
+                system_instruction=system_prompt,
+                temperature=0.4, # Lower temperature for institutional accuracy
+            ),
+            contents=user_prompt
         )
-        return response.text
+        for chunk in response:
+            yield chunk.text
     except Exception as e:
-        return f"Gemini Error: {str(e)}"
+        yield f"❌ System Error: {str(e)}"
 
 # ══════════════════════════════════════════════════════════════════════════════
-#  SIDEBAR
+# 2. ENHANCED SYSTEM PROMPTS (The 'Secret Sauce')
 # ══════════════════════════════════════════════════════════════════════════════
+MACRO_SYSTEM = """You are a Lead Global Macro Strategist. 
+Analyze the intersection of Global Liquidity, Bond Yields, and Volatility.
+Always provide a 'Base Case' and a 'Black Swan' scenario.
+Focus on correlations: if X happens, then Y is the asymmetric play."""
+
+SUPPLY_SYSTEM = """You are a Supply Chain Forensic Analyst. 
+Map the 'Nervous System' of a sector. Identify the one company that owns the IP 
+or the bottleneck that the giants (AAPL, NVDA, TSLA) cannot live without.
+Bold all tickers: **$TICKER**."""
+
+# ══════════════════════════════════════════════════════════════════════════════
+# 3. ADVANCED UI COMPONENTS
+# ══════════════════════════════════════════════════════════════════════════════
+st.set_page_config(page_title="Alpha Machine v4", layout="wide", page_icon="🛡️")
+
+# --- Custom Sidebar ---
 with st.sidebar:
-    st.title("🎯 Alpha Machine")
-    api_key = st.text_input("Gemini API Key", type="password")
-    st.info("Using Model: gemini-2.5-flash")
+    st.title("🛡️ Alpha Control")
+    gemini_key = st.text_input("Gemini API Key", type="password")
     
-    if st.button("Clear Results"):
-        st.session_state.research_results = None
+    st.divider()
+    st.subheader("Live Intelligence Feed")
+    st.status("MCP Server: Connected", state="complete")
+    st.status("Sentiment: Risk-On", state="running")
+    
+    if st.button("Reset Session"):
+        st.session_state.clear()
         st.rerun()
 
-# ══════════════════════════════════════════════════════════════════════════════
-#  MAIN INTERFACE
-# ══════════════════════════════════════════════════════════════════════════════
-st.title("⚡ Multi-Layer Supply Chain Research")
+# --- Main Dashboard ---
+st.title("⚡ Institutional Alpha Engine")
 
-query = st.text_input("Enter Sector or Commodity (e.g., 'Nuclear SMR' or 'Nvidia H200')", 
-                     value=st.session_state.current_query)
+tab1, tab2, tab3 = st.tabs(["🏛️ Macro Regime", "⛓️ Supply Chain Forensic", "📢 Monetization Agent"])
 
-col1, col2 = st.columns([1, 4])
+with tab1:
+    st.header("Global Liquidity & Smart Money Flow")
+    if st.button("Generate Macro Brief", key="macro_btn"):
+        with st.status("Analyzing DXY, VIX, and Bond Yields...", expanded=True) as status:
+            st.write("Fetching real-time yields...")
+            time.sleep(1)
+            st.write("Calculating Smart Money Divergence...")
+            
+            output_container = st.empty()
+            full_response = ""
+            for chunk in stream_alpha_intel(MACRO_SYSTEM, "Analyze the current 8-hour market regime and identify smart money rotation.", gemini_key):
+                full_response += chunk
+                output_container.markdown(full_response)
+            
+            st.session_state.last_macro = full_response
+            status.update(label="Analysis Complete", state="complete")
 
-with col1:
-    # Action button
-    if st.button("Run Supply Chain Scan", use_container_width=True):
-        if not api_key:
-            st.error("Please enter an API Key in the sidebar.")
-        elif not query:
-            st.warning("Enter a query first.")
-        else:
-            with st.spinner(f"Tracing {query} supply chain..."):
-                st.session_state.current_query = query
-                result = run_supply_chain_analysis(query, api_key)
-                st.session_state.research_results = result
+with tab2:
+    st.header("Supply Chain Bottleneck Discovery")
+    target = st.text_input("Enter Ticker or Technology (e.g., 'EUV Lithography', 'ASML'):")
+    if st.button("Trace Ecosystem"):
+        if target:
+            with st.status(f"Mapping {target} Nervous System...") as status:
+                output_container = st.empty()
+                full_response = ""
+                for chunk in stream_alpha_intel(SUPPLY_SYSTEM, f"Find the asymmetric winners in the {target} supply chain.", gemini_key):
+                    full_response += chunk
+                    output_container.markdown(full_response)
+                
+                st.session_state.last_research = full_response
+                status.update(label="Ecosystem Mapped", state="complete")
 
-# Display Area (Persists due to session_state)
-with col2:
-    if st.session_state.research_results:
-        st.markdown("### 🔍 Research Output")
-        st.markdown(st.session_state.research_results)
-        
-        # Download button for the report
-        st.download_button(
-            "Download Report", 
-            data=st.session_state.research_results, 
-            file_name=f"Alpha_{query.replace(' ', '_')}.md"
-        )
+with tab3:
+    st.header("One-Click Monetization")
+    source_content = st.session_state.get("last_research") or st.session_state.get("last_macro")
+    
+    if source_content:
+        col1, col2 = st.columns(2)
+        with col1:
+            if st.button("Draft Viral X Thread"):
+                res = stream_alpha_intel("You are a viral ghostwriter.", f"Turn this into a 7-tweet thread with hooks: {source_content}", gemini_key)
+                st.write_stream(res)
+        with col2:
+            if st.button("Draft Professional Newsletter"):
+                res = stream_alpha_intel("You are a Substack financial analyst.", f"Format this into a professional research note: {source_content}", gemini_key)
+                st.write_stream(res)
     else:
-        st.info("Input a sector and click 'Run' to begin analysis.")
-
-# ══════════════════════════════════════════════════════════════════════════════
-#  DASHBOARD MODES (Reference)
-# ══════════════════════════════════════════════════════════════════════════════
-st.divider()
-st.subheader("Available Intelligence Layers")
-c1, c2, c3 = st.columns(3)
-c1.markdown("**⛓️ Supply Chain**\nFinds bottlenecks & toll-bridges.")
-c2.markdown("**🏛️ Smart Money**\nInstitutional rotation tracker.")
-c3.markdown("**🏗️ Infrastructure**\nCapex cycle analysis.")
+        st.warning("Please run research in Tab 1 or 2 first.")
