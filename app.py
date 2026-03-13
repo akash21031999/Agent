@@ -223,37 +223,31 @@ def get_news(query, n=10):
     except:
         return []
 
-# ── GEMINI 2.0 FLASH — free tier, synchronous ────────────────────────────────
-# Free limits: 15 req/min · 1,500 req/day · 1M tokens/min
+# ── GEMINI — google-genai SDK with Google Search grounding ───────────────────
+# Model: gemini-2.5-flash-preview-05-20 (latest, free tier)
 # Get free key: https://aistudio.google.com/app/apikey
 
-GEMINI_URL = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-lite:generateContent"
+from google import genai
+from google.genai import types
 
 def call_gemini(system, user, key):
-    """Synchronous call to Gemini 2.0 Flash Lite — completely free."""
+    """Call Gemini with Google Search grounding — same pattern as working Alpha Terminal."""
     try:
-        r = requests.post(
-            f"{GEMINI_URL}?key={key}",
-            headers={"Content-Type": "application/json"},
-            json={
-                "system_instruction": {"parts": [{"text": system}]},
-                "contents": [{"role": "user", "parts": [{"text": user}]}],
-                "generationConfig": {
-                    "temperature": 0.3,
-                    "maxOutputTokens": 3000,
-                },
-            },
-            timeout=120,
+        client = genai.Client(api_key=key)
+        google_search_tool = types.Tool(google_search=types.GoogleSearch())
+        config = types.GenerateContentConfig(
+            tools=[google_search_tool],
+            temperature=0.2,
+            system_instruction=system,
         )
-        d = r.json()
-        if "error" in d:
-            return f"[API error: {d['error'].get('message', str(d['error']))}]"
-        try:
-            return d["candidates"][0]["content"]["parts"][0]["text"]
-        except (KeyError, IndexError):
-            return f"[Unexpected response: {str(d)[:300]}]"
+        response = client.models.generate_content(
+            model="gemini-2.5-flash-preview-05-20",
+            contents=user,
+            config=config,
+        )
+        return response.text
     except Exception as e:
-        return f"[Request failed: {e}]"
+        return f"[API error: {e}]"
 
 # ── AGENTS ────────────────────────────────────────────────────────────────────
 
