@@ -1,6 +1,3 @@
-"""
-Alpha Machine v3 — MCP Integrated & Fixed
-"""
 import streamlit as st
 import pandas as pd
 from datetime import datetime
@@ -8,17 +5,16 @@ from google import genai
 from google.genai import types
 
 # ══════════════════════════════════════════════════════════════════════════════
-# 1. FIXED CORE FUNCTION (Now handles 'key' correctly)
+# 1. CORE ENGINE
 # ══════════════════════════════════════════════════════════════════════════════
 def call_gemini(system_prompt, user_prompt, api_key):
     if not api_key:
-        st.error("Missing Gemini API Key!")
-        return "Error: No API Key"
-    
+        st.error("Missing Gemini API Key in Sidebar!")
+        return None
     try:
         client = genai.Client(api_key=api_key)
         response = client.models.generate_content(
-            model="gemini-2.5-flash", # Updated to latest model
+            model="gemini-2.0-flash", # Use 2.0 for best performance
             config=types.GenerateContentConfig(
                 system_instruction=system_prompt,
                 temperature=0.7
@@ -27,52 +23,75 @@ def call_gemini(system_prompt, user_prompt, api_key):
         )
         return response.text
     except Exception as e:
-        return f"Gemini Error: {str(e)}"
+        st.error(f"Gemini Error: {str(e)}")
+        return None
 
 # ══════════════════════════════════════════════════════════════════════════════
-# 2. UPDATED RESEARCH MODES (Fixed the 'key' passing error)
+# 2. INTELLIGENCE MODES
 # ══════════════════════════════════════════════════════════════════════════════
 
 def run_supply_chain(key, target):
-    system = "You are a supply chain intelligence analyst. Map ecosystems and find hidden asymmetric bets."
-    user = f"Analyze the supply chain for {target}. Find obscure bottlenecks and high-upside suppliers. End with TICKERS: [list]."
-    return call_gemini(system, user, key) # KEY PASSED CORRECTLY
+    system = """You are a Lead Supply Chain Intelligence Analyst. 
+    Map complete ecosystems. Find hidden asymmetric bets in obscure suppliers.
+    STRICT FORMATTING: 
+    - Bold all tickers like **$ASML**, **$KLAC**, **$VRT**.
+    - Focus on 'Smart Money' rotation and institutional buying reasons."""
+    user = f"Analyze the supply chain for {target}. Identify the 'bottleneck' companies that capture the most value."
+    return call_gemini(system, user, key)
 
-def run_social_media_agent(key, research_output):
-    """NEW: Leverage AI to monetize. Turns research into viral content."""
-    system = "You are a world-class financial ghostwriter for X (Twitter) and LinkedIn."
-    user = f"Transform this research into a 5-tweet thread and a professional LinkedIn post:\n\n{research_output}"
+def run_macro_brief(key):
+    system = "You are a Macro Strategist. Analyze DXY, VIX, Bonds, and Global Liquidity."
+    user = "Give me the current market regime. Is it Risk-On or Risk-Off? Predict the next 8 hours based on smart money flow."
     return call_gemini(system, user, key)
 
 # ══════════════════════════════════════════════════════════════════════════════
-# 3. STREAMLIT UI
+# 3. STREAMLIT UI (Fixed Display Logic)
 # ══════════════════════════════════════════════════════════════════════════════
 st.set_page_config(page_title="Alpha Machine v3", layout="wide")
 
-# Sidebar Setup
 with st.sidebar:
-    st.title("⚙️ Control Center")
+    st.title("🛡️ Alpha Machine")
     gemini_key = st.text_input("Gemini API Key", type="password")
-    mcp_status = st.status("MCP Server Connection", expanded=False)
-    mcp_status.write("✅ Connected to local-mcp-engine")
+    st.divider()
+    st.status("MCP Engine: Connected")
 
-# Main Logic
-tab1, tab2, tab3 = st.tabs(["🔍 Research", "🔗 Supply Chain", "📱 Monetize (AI Agent)"])
+tab1, tab2, tab3 = st.tabs(["🔍 Macro Pulse", "🔗 Supply Chain", "📱 Monetize"])
 
+# --- TAB 1: MACRO ---
 with tab1:
-    target = st.text_input("Enter Company/Sector:")
-    if st.button("Run Alpha Deep Dive"):
-        with st.spinner("Analyzing..."):
-            # Mocking MCP call example:
-            # result = mcp_client.call_tool("fetch_sector_news", {"sector": target})
-            st.session_state.research = run_supply_chain(gemini_key, target)
-            st.markdown(st.session_state.research)
+    st.header("Global Macro & Smart Money")
+    if st.button("Generate Market Brief"):
+        with st.spinner("Analyzing VIX, DXY, and Bonds..."):
+            st.session_state.macro_res = run_macro_brief(gemini_key)
+    
+    if "macro_res" in st.session_state:
+        st.markdown(st.session_state.macro_res)
 
+# --- TAB 2: SUPPLY CHAIN (FIXED: Result stays on page) ---
+with tab2:
+    st.header("Supply Chain Deep-Dive")
+    target = st.text_input("Enter Company/Sector (e.g., 'Advanced Packaging'):")
+    
+    if st.button("Analyze Asymmetry"):
+        if target:
+            with st.spinner(f"Mapping {target} Ecosystem..."):
+                st.session_state.supply_res = run_supply_chain(gemini_key, target)
+        else:
+            st.warning("Enter a target first.")
+
+    # This display is OUTSIDE the button so it stays visible
+    if "supply_res" in st.session_state:
+        st.divider()
+        st.markdown(st.session_state.supply_res)
+
+# --- TAB 3: MONETIZE ---
 with tab3:
-    st.header("Turn Research into Revenue")
-    if "research" in st.session_state:
-        if st.button("Generate Viral Posts"):
-            social_content = run_social_media_agent(gemini_key, st.session_state.research)
-            st.code(social_content, language="markdown")
+    st.header("Revenue Agent")
+    if "supply_res" in st.session_state or "macro_res" in st.session_state:
+        if st.button("Generate Social Content"):
+            content = st.session_state.get("supply_res") or st.session_state.get("macro_res")
+            prompt = "Transform this into a viral 5-tweet thread and a LinkedIn post."
+            res = call_gemini("You are a financial ghostwriter.", content + prompt, gemini_key)
+            st.code(res, language="markdown")
     else:
-        st.warning("Run a research deep-dive first!")
+        st.info("Run research in Tab 1 or 2 to generate content.")
