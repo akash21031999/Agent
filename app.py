@@ -6,6 +6,100 @@ from crewai import Agent, Task, Crew, Process
 from langchain_groq import ChatGroq
 import yfinance as yf
 
+import streamlit as st
+from openai import OpenAI
+
+import streamlit as st
+from openai import OpenAI
+
+# 1. Retrieve the key securely from Advanced Settings
+deepseek_key = st.secrets["DEEPSEEK_API_KEY"]
+
+# 2. Initialize the DeepSeek Client
+# DeepSeek uses an OpenAI-compatible base URL
+client = OpenAI(
+    api_key=deepseek_key,
+    base_url="https://api.deepseek.com"
+)
+
+st.title("🏦 DeepSeek Alpha Terminal")
+
+# Simple check to see if key is loaded
+if deepseek_key:
+    st.success("DeepSeek API Key loaded from Secrets.")
+
+# Example function to run a deep research prompt
+def run_deepseek_reasoning(prompt):
+    response = client.chat.completions.create(
+        model="deepseek-reasoner", # This is the R1 Reasoning model
+        messages=[
+            {"role": "system", "content": "You are a senior investment analyst specializing in asymmetric supply chain bets."},
+            {"role": "user", "content": prompt}
+        ],
+        stream=True
+    )
+    return response
+
+# UI Input
+user_query = st.text_input("Enter Research Query:")
+
+if st.button("Analyze"):
+    if user_query:
+        with st.chat_message("assistant"):
+            response_container = st.empty()
+            full_response = ""
+            
+            # Streaming the response for that "Chain of Thought" look
+            for chunk in run_deepseek_reasoning(user_query):
+                if chunk.choices[0].delta.content:
+                    full_response += chunk.choices[0].delta.content
+                    response_container.markdown(full_response + "▌")
+            response_container.markdown(full_response)
+
+# 1. Retrieve the key securely from Advanced Settings
+deepseek_key = st.secrets["DEEPSEEK_API_KEY"]
+
+# 2. Initialize the DeepSeek Client
+# DeepSeek uses an OpenAI-compatible base URL
+client = OpenAI(
+    api_key=deepseek_key,
+    base_url="https://api.deepseek.com"
+)
+
+st.title("🏦 DeepSeek Alpha Terminal")
+
+# Simple check to see if key is loaded
+if deepseek_key:
+    st.success("DeepSeek API Key loaded from Secrets.")
+
+# Example function to run a deep research prompt
+def run_deepseek_reasoning(prompt):
+    response = client.chat.completions.create(
+        model="deepseek-reasoner", # This is the R1 Reasoning model
+        messages=[
+            {"role": "system", "content": "You are a senior investment analyst specializing in asymmetric supply chain bets."},
+            {"role": "user", "content": prompt}
+        ],
+        stream=True
+    )
+    return response
+
+# UI Input
+user_query = st.text_input("Enter Research Query:")
+
+if st.button("Analyze"):
+    if user_query:
+        with st.chat_message("assistant"):
+            response_container = st.empty()
+            full_response = ""
+            
+            # Streaming the response for that "Chain of Thought" look
+            for chunk in run_deepseek_reasoning(user_query):
+                if chunk.choices[0].delta.content:
+                    full_response += chunk.choices[0].delta.content
+                    response_container.markdown(full_response + "▌")
+            response_container.markdown(full_response)
+
 # --- 1. CONFIGURATION & AI SETUP ---
 # DeepSeek-R1 via Groq is the "Strategist" (Reasoning Layer)
 # Gemini-3-Flash is the "Scraper" (High-speed data processing)
