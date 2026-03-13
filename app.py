@@ -224,7 +224,7 @@ def get_news(query, n=10):
         return []
 
 # ── GEMINI — google-genai SDK with Google Search grounding ───────────────────
-# Model: gemini-2.5-flash-preview-05-20 (latest, free tier)
+# Model: gemini-2.5-flash (latest, free tier)
 # Get free key: https://aistudio.google.com/app/apikey
 
 from google import genai
@@ -241,7 +241,7 @@ def call_gemini(system, user, key):
             system_instruction=system,
         )
         response = client.models.generate_content(
-            model="gemini-2.5-flash-preview-05-20",
+            model="gemini-2.5-flash",
             contents=user,
             config=config,
         )
