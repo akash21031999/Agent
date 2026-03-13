@@ -378,7 +378,7 @@ After all bets add:
 🌍 MACRO REGIME: [one sentence — current market backdrop]"""
     results["thesis"] = call_gemini(
         "You are the CIO of a macro hedge fund. Distill 4 analyst reports into razor-sharp, actionable investment theses. No fluff. Only alpha scoring 7+/10.",
-        prompt, key, max_tokens=3000)
+        prompt, key)
 
 # ── PARALLEL RUNNER (threading, no asyncio) ───────────────────────────────────
 
