@@ -1,23 +1,35 @@
-name: Alpha Watchdog
-on:
-  schedule:
-    - cron: '0 12 * * *' # Runs at 12:00 UTC (8:00 AM EST)
-  workflow_dispatch: # Allows manual run
+import os
+import requests
+from google import genai
+from datetime import datetime
 
-jobs:
-  run-watchdog:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v3
-      - name: Set up Python
-        uses: actions/setup-python@v4
-        with:
-          python-version: '3.11'
-      - name: Install dependencies
-        run: pip install google-genai requests
-      - name: Run Watchdog
-        env:
-          GEMINI_KEY: ${{ secrets.GEMINI_KEY }}
-          TELE_TOKEN: ${{ secrets.TELE_TOKEN }}
-          TELE_ID: ${{ secrets.TELE_ID }}
-        run: python watchdog.py
+# CONFIG (Set these in GitHub Secrets)
+GEMINI_KEY = os.getenv("GEMINI_KEY")
+TELE_TOKEN = os.getenv("TELE_TOKEN")
+TELE_ID = os.getenv("TELE_ID")
+
+def send_telegram(text):
+    url = f"https://api.telegram.org/bot{TELE_TOKEN}/sendMessage"
+    requests.post(url, data={"chat_id": TELE_ID, "text": text, "parse_mode": "Markdown"})
+
+def generate_institutional_brief():
+    client = genai.Client(api_key=GEMINI_KEY)
+    
+    # Prompting the AI to simulate your required data crunching
+    prompt = """
+    CRITICAL ANALYSIS REQUEST:
+    1. MARKET SENTIMENT: Analyze VIX, DXY, and 10Y Bond Yields.
+    2. SMART MONEY: Track institutional flows into AI Infrastructure, Aerospace, and Defense.
+    3. SCENARIO: Provide Bullish/Bearish predictions for the next 4-8 hours.
+    4. OPPORTUNITIES: List 3 asymmetric bets with bold tickers like **$VRT**.
+    
+    Format as a professional 'Institutional Brief'.
+    """
+    
+    response = client.models.generate_content(model="gemini-2.5-flash", contents=prompt)
+    return response.text
+
+if __name__ == "__main__":
+    report = generate_institutional_brief()
+    header = f"🚀 **ALPHA WATCHDOG REPORT [{datetime.now().strftime('%H:%M')}]**\n\n"
+    send_telegram(header + report)
