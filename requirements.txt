@@ -1,0 +1,6 @@
+streamlit
+pandas
+yfinance
+crewai
+langchain_groq
+google-genai
