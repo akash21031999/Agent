@@ -1,0 +1,23 @@
+name: Alpha Watchdog
+on:
+  schedule:
+    - cron: '0 12 * * *' # Runs at 12:00 UTC (8:00 AM EST)
+  workflow_dispatch: # Allows manual run
+
+jobs:
+  run-watchdog:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+      - name: Install dependencies
+        run: pip install google-genai requests
+      - name: Run Watchdog
+        env:
+          GEMINI_KEY: ${{ secrets.GEMINI_KEY }}
+          TELE_TOKEN: ${{ secrets.TELE_TOKEN }}
+          TELE_ID: ${{ secrets.TELE_ID }}
+        run: python watchdog.py
