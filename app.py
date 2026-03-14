@@ -49,9 +49,28 @@ h1,h2,h3,p,li,span,div,label { color:#e2e8f0; }
 .mna { color:#374151; font-size:0.75rem; }
 .result-card {
     background:linear-gradient(135deg,#08111e,#0d1928); border:1px solid #1e3a5f;
-    border-left:4px solid #00ffa3; border-radius:12px; padding:20px 24px; margin:12px 0;
-    font-family:'JetBrains Mono',monospace; font-size:0.84rem;
-    color:#cde8ff; white-space:pre-wrap; line-height:1.7;
+    border-left:4px solid #00ffa3; border-radius:12px; padding:24px 28px; margin:12px 0;
+    font-family:'Inter',sans-serif; font-size:0.92rem;
+    color:#e2e8f0; line-height:1.85; word-wrap:break-word; overflow-wrap:break-word;
+    max-width:100%; box-sizing:border-box;
+}
+/* Report typography inside result cards */
+.result-card h1,.result-card h2,.result-card h3 {
+    color:#00ffa3; font-weight:700; margin:18px 0 8px; letter-spacing:-0.3px;
+}
+.result-card h2 { font-size:1.05rem; border-bottom:1px solid #1e3a5f; padding-bottom:4px; }
+.result-card h3 { font-size:0.95rem; color:#a78bfa; }
+.result-card p  { margin:8px 0; color:#cbd5e1; }
+.result-card ul,.result-card ol { padding-left:20px; margin:8px 0; }
+.result-card li { margin:5px 0; color:#cbd5e1; }
+.result-card strong { color:#f1f5f9; font-weight:700; }
+.result-card em { color:#94a3b8; }
+.result-card hr { border:none; border-top:1px solid #1e3a5f; margin:16px 0; }
+.result-card code { background:#0a1628; padding:2px 6px; border-radius:4px;
+    font-family:'JetBrains Mono',monospace; font-size:0.82rem; color:#00ffa3; }
+/* Mobile responsive */
+@media (max-width: 768px) {
+    .result-card { padding:16px 18px; font-size:0.88rem; }
 }
 .result-card.supply    { border-left-color:#f59e0b; }
 .result-card.sector    { border-left-color:#8b5cf6; }
@@ -77,6 +96,26 @@ h1,h2,h3,p,li,span,div,label { color:#e2e8f0; }
              padding:12px 16px; margin:8px 0; font-size:0.82rem; color:#86efac; }
 .warn-box  { background:#1f0a0a; border:1px solid #ef4444; border-radius:8px;
              padding:12px 16px; margin:8px 0; font-size:0.82rem; color:#fca5a5; }
+
+/* Streaming output container */
+.stream-out { max-width:100%; word-wrap:break-word; overflow-wrap:break-word;
+              font-family:'Inter',sans-serif; font-size:0.92rem;
+              line-height:1.85; color:#e2e8f0; }
+.stream-out h1,.stream-out h2,.stream-out h3 { color:#00ffa3; font-weight:700; }
+.stream-out h2 { border-bottom:1px solid #1e3a5f; padding-bottom:4px; }
+.stream-out strong { color:#f1f5f9; }
+.stream-out code { background:#0a1628; padding:2px 6px; border-radius:4px;
+    font-family:'JetBrains Mono',monospace; font-size:0.82rem; color:#00ffa3; }
+@media (max-width:768px) {
+    .stream-out { font-size:0.88rem; line-height:1.75; }
+    .block-container { padding-left:1rem !important; padding-right:1rem !important; }
+}
+
+/* Better table rendering in reports */
+.result-card table { width:100%; border-collapse:collapse; margin:12px 0; font-size:0.85rem; }
+.result-card th { background:#0a1628; color:#00ffa3; padding:8px 12px; text-align:left; }
+.result-card td { padding:7px 12px; border-bottom:1px solid #1e2d45; color:#cbd5e1; }
+.result-card tr:hover td { background:#0d1928; }
 </style>
 """, unsafe_allow_html=True)
 
@@ -84,7 +123,7 @@ h1,h2,h3,p,li,span,div,label { color:#e2e8f0; }
 #  HEADER
 # ══════════════════════════════════════════════════════════════════════════════
 st.markdown('<p class="alpha-title">🛡️ Alpha Machine v4</p>', unsafe_allow_html=True)
-st.markdown(f'<p class="alpha-sub">INSTITUTIONAL INTELLIGENCE · 21 MODES · STREAMING · LIVE WEB GROUNDING · {datetime.now().strftime("%d %b %Y · %H:%M UTC")}</p>', unsafe_allow_html=True)
+st.markdown(f'<p class="alpha-sub">INSTITUTIONAL INTELLIGENCE · 21 MODES · STREAMING · MOBILE OPTIMISED · {datetime.now().strftime("%d %b %Y · %H:%M UTC")}</p>', unsafe_allow_html=True)
 
 # ══════════════════════════════════════════════════════════════════════════════
 #  SIDEBAR
@@ -320,7 +359,26 @@ def key_check():
     return True
 
 def show_result(text, cls=""):
-    st.markdown(f'<div class="result-card {cls}">{text}</div>', unsafe_allow_html=True)
+    """Render AI output as clean markdown inside a styled card."""
+    # Accent color per mode
+    colors = {
+        "supply":"#f59e0b","sector":"#8b5cf6","stress":"#ef4444","geo":"#3b82f6",
+        "commodity":"#f97316","portfolio":"#ec4899","compare":"#14b8a6","rotation":"#a78bfa",
+        "catalyst":"#fbbf24","earnings":"#06b6d4","sec":"#f43f5e","options":"#84cc16",
+        "inst":"#fb923c","watchdog":"#e879f9","backtest":"#22d3ee","newsletter":"#4ade80",
+        "macro-regime":"#00ffa3","monetize":"#f0abfc","alpha":"#00ffa3",
+    }
+    accent = colors.get(cls, "#00ffa3")
+    st.markdown(
+        f'''<div style="border-left:4px solid {accent}; border-radius:12px;
+            background:linear-gradient(135deg,#08111e,#0d1928); border:1px solid #1e3a5f;
+            border-left:4px solid {accent}; padding:4px 0 4px 0; margin:12px 0;
+            max-width:100%; box-sizing:border-box;">''',
+        unsafe_allow_html=True
+    )
+    # Render the actual content as native Streamlit markdown (fully responsive)
+    st.markdown(text)
+    st.markdown("</div>", unsafe_allow_html=True)
 
 def action_buttons(text, prefix="alpha"):
     c1, c2 = st.columns(2)
@@ -900,7 +958,7 @@ with tab_scan:
                 prog.progress(100, text="✅ Complete!")
                 st.markdown("## 🏆 Final Alpha Report")
                 final = results.get("thesis","[No output]")
-                show_result(final)
+                show_result(final, "alpha")
                 action_buttons(f"🤖 ALPHA MACHINE v3\n{datetime.now().strftime('%Y-%m-%d %H:%M UTC')}\n\n{final}", "alpha_scan")
                 # Store in session state for newsletter
                 st.session_state["last_scan"] = results
