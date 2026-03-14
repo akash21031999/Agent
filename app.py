@@ -369,6 +369,161 @@ def edgar_filings(ticker, forms="8-K,4,10-Q"):
                  "company":h["_source"].get("entity_name","")} for h in hits]
     except: return []
 
+
+# ── Yahoo Finance Options Chain (free, no key) ────────────────────────────────
+@st.cache_data(ttl=600, show_spinner=False)
+def yf_options_chain(sym: str) -> pd.DataFrame:
+    """
+    Fetch full options chain from Yahoo Finance public API.
+    Returns DataFrame: [expiration, type, strike, lastPrice, bid, ask, volume, openInterest, impliedVolatility]
+    """
+    try:
+        url = f"https://query1.finance.yahoo.com/v7/finance/options/{sym}"
+        r   = requests.get(url, headers=YF_HDR, timeout=8)
+        root = r.json().get("optionChain", {}).get("result", [])
+        if not root: return pd.DataFrame()
+        rows = []
+        for block in root[:4]:  # first 4 expiries
+            exp_ts = block.get("expirationDate")
+            exp_dt = datetime.fromtimestamp(exp_ts).strftime("%Y-%m-%d") if exp_ts else "N/A"
+            for side, key_name in [("call","calls"),("put","puts")]:
+                for opts_block in block.get("options",[]):
+                    for c in opts_block.get(key_name, []):
+                        rows.append({
+                            "expiration":      exp_dt,
+                            "type":            side,
+                            "strike":          c.get("strike", 0),
+                            "lastPrice":       c.get("lastPrice", 0),
+                            "bid":             c.get("bid", 0),
+                            "ask":             c.get("ask", 0),
+                            "volume":          int(c.get("volume") or 0),
+                            "openInterest":    int(c.get("openInterest") or 0),
+                            "impliedVol":      round(float(c.get("impliedVolatility") or 0)*100, 1),
+                            "inTheMoney":      bool(c.get("inTheMoney", False)),
+                        })
+        return pd.DataFrame(rows)
+    except:
+        return pd.DataFrame()
+
+
+def detect_unusual_flow(sym: str, chain: pd.DataFrame, stock_price: float,
+                         min_vol_oi: float = 2.5) -> dict:
+    """
+    Institutional-grade flow detection:
+    1. Vol/OI ratio per (expiry, type) — fresh positioning signal
+    2. Put/Call ratio — directional skew
+    3. Gamma Exposure estimate (GEX proxy) — dealer positioning pressure
+    4. Large strike concentration — whale positioning level
+    5. IV skew (OTM puts vs OTM calls IV)
+    Returns dict with alerts list + summary metrics.
+    """
+    if chain.empty or stock_price <= 0:
+        return {"alerts": [], "metrics": {}, "verdict": "NO DATA"}
+
+    alerts = []
+    # ── Vol/OI sweep detector ────────────────────────────────────────────────
+    grp = chain.groupby(["expiration","type"], as_index=False).agg(
+        total_vol=("volume","sum"),
+        total_oi=("openInterest","sum"),
+        avg_iv=("impliedVol","mean"),
+        strikes=("strike","count")
+    )
+    for _, row in grp.iterrows():
+        oi = row["total_oi"]
+        if oi <= 0 or row["total_vol"] <= 0: continue
+        vol_oi = row["total_vol"] / max(oi, 1)
+        if vol_oi < min_vol_oi: continue
+        score = min(10.0, round(2 + vol_oi * 1.5, 1))
+        direction = "BULLISH" if row["type"]=="call" else "BEARISH"
+        alerts.append({
+            "Ticker":    sym,
+            "Expiry":    row["expiration"],
+            "Side":      row["type"].upper(),
+            "Vol":       int(row["total_vol"]),
+            "OI":        int(oi),
+            "Vol/OI":    round(vol_oi, 2),
+            "Avg IV%":   round(row["avg_iv"], 1),
+            "Score":     score,
+            "Direction": direction,
+            "Signal":    f"Unusual {row['type'].upper()} sweep — {vol_oi:.1f}x normal volume",
+        })
+
+    # ── Put/Call ratio ───────────────────────────────────────────────────────
+    call_vol = int(chain[chain["type"]=="call"]["volume"].sum())
+    put_vol  = int(chain[chain["type"]=="put"]["volume"].sum())
+    call_oi  = int(chain[chain["type"]=="call"]["openInterest"].sum())
+    put_oi   = int(chain[chain["type"]=="put"]["openInterest"].sum())
+    pc_vol   = round(put_vol / max(call_vol, 1), 3)
+    pc_oi    = round(put_oi  / max(call_oi, 1),  3)
+
+    # ── Gamma Exposure (GEX) proxy ────────────────────────────────────────────
+    # GEX proxy = Σ (OI × delta_proxy × strike) per contract
+    # delta_proxy: calls above stock = 0.5, puts below stock = -0.5 (simplified)
+    try:
+        calls = chain[chain["type"]=="call"].copy()
+        puts  = chain[chain["type"]=="put"].copy()
+        call_gex = float((calls["openInterest"] * calls["strike"] * 0.5).sum()) / 1e6
+        put_gex  = float((puts["openInterest"]  * puts["strike"]  * 0.5).sum()) / 1e6
+        net_gex  = round(call_gex - put_gex, 1)  # positive = dealer long gamma (dampens moves)
+    except:
+        net_gex = 0
+
+    # ── Largest OI concentration (whale strike) ───────────────────────────────
+    if not chain.empty:
+        top_call = chain[chain["type"]=="call"].nlargest(1,"openInterest")
+        top_put  = chain[chain["type"]=="put"].nlargest(1,"openInterest")
+        whale_call_strike = float(top_call["strike"].iloc[0]) if not top_call.empty else 0
+        whale_put_strike  = float(top_put["strike"].iloc[0])  if not top_put.empty  else 0
+    else:
+        whale_call_strike = whale_put_strike = 0
+
+    # ── IV Skew (25-delta proxy) ───────────────────────────────────────────────
+    try:
+        otm_calls = chain[(chain["type"]=="call") & (chain["strike"] > stock_price*1.05)]["impliedVol"]
+        otm_puts  = chain[(chain["type"]=="put")  & (chain["strike"] < stock_price*0.95)]["impliedVol"]
+        iv_skew   = round(float(otm_puts.mean() - otm_calls.mean()), 1) if len(otm_calls)>0 and len(otm_puts)>0 else 0
+    except:
+        iv_skew = 0
+
+    # ── Verdict ───────────────────────────────────────────────────────────────
+    if pc_vol > 1.5:       flow_verdict = "BEARISH FLOW (heavy put buying)"
+    elif pc_vol < 0.6:     flow_verdict = "BULLISH FLOW (heavy call buying)"
+    elif net_gex > 100:    flow_verdict = "NEUTRAL / DEALER LONG GAMMA (suppressed moves)"
+    elif net_gex < -100:   flow_verdict = "VOLATILE / DEALER SHORT GAMMA (amplified moves)"
+    else:                  flow_verdict = "MIXED / HEDGING ACTIVITY"
+
+    metrics = {
+        "Put/Call Vol":      pc_vol,
+        "Put/Call OI":       pc_oi,
+        "Net GEX ($M)":      net_gex,
+        "Whale Call Strike": whale_call_strike,
+        "Whale Put Strike":  whale_put_strike,
+        "IV Skew (put-call)":iv_skew,
+        "Total Call Vol":    call_vol,
+        "Total Put Vol":     put_vol,
+    }
+    return {"alerts": alerts, "metrics": metrics, "verdict": flow_verdict}
+
+
+@st.cache_data(ttl=600, show_spinner=False)
+def scan_unusual_options(tickers: list, min_vol_oi: float = 2.5) -> tuple:
+    """
+    Multi-ticker sweep. Returns (alerts_df, summary_dict).
+    """
+    all_alerts = []
+    summaries  = {}
+    for sym in tickers:
+        chain = yf_options_chain(sym)
+        price, _ = yf_price(sym)
+        if chain.empty or not price: continue
+        result = detect_unusual_flow(sym, chain, price, min_vol_oi)
+        all_alerts.extend(result["alerts"])
+        if result["alerts"] or abs(result["metrics"].get("Put/Call Vol",1)-1) > 0.4:
+            summaries[sym] = {**result["metrics"], "verdict": result["verdict"]}
+        time.sleep(0.25)
+    df = pd.DataFrame(all_alerts) if all_alerts else pd.DataFrame()
+    return df, summaries
+
 # ── Google News RSS (free) ───────────────────────────────────────────────────
 @st.cache_data(ttl=600, show_spinner=False)
 def get_news(query, n=8):
@@ -625,6 +780,14 @@ Rank by institutional conviction. Provide specific ETF + stock plays.""",
 Synthesize multi-agent research into razor-sharp, actionable investment theses.
 Only surface bets scoring 7+/10 across: Asymmetry · Catalyst Clarity · Macro Alignment.
 No fluff. Only alpha.""",
+
+"flow": """You are the Smart Money Flow Desk at a multi-strategy hedge fund.
+You read options flow the way a cardiologist reads an ECG — not just the number, but the pattern.
+Rules: (1) Vol/OI > 3x = someone opening fresh, large, directional bets. (2) Low IV + high volume = 
+institutional accumulation before a known catalyst. (3) OTM sweeps near earnings = insider-adjacent 
+positioning. (4) Put/Call < 0.5 on a down day = someone buying dips with conviction.
+Always classify: DIRECTIONAL BET / HEDGING / DEALER FLOW / SHORT SQUEEZE SETUP.
+End with ONE highest-priority trade: ticker, direction, entry, stop, horizon.""",
 }
 
 def call_gemini(system: str, user: str, key: str) -> str:
@@ -1139,6 +1302,63 @@ def run_newsletter(key, scan_results, name, newsletter):
         f"## Portfolio Moves\n## Key Dates Next Week\n## One-Line Market Take\n"
         f"Tone: confident, data-driven, slightly contrarian. No fluff.", key)
 
+
+# ── 20. SMART MONEY RADAR ─────────────────────────────────────────────────────
+def run_flow_radar_ai(key: str, df_alerts: pd.DataFrame, summaries: dict) -> str:
+    """Institutional-grade AI interpretation of multi-ticker options flow."""
+    if df_alerts.empty and not summaries:
+        return "No significant unusual activity detected in this universe."
+
+    # Build a rich context string
+    table = df_alerts.sort_values("Score", ascending=False).head(25).to_string(index=False) \
+            if not df_alerts.empty else "No Vol/OI anomalies above threshold."
+
+    summary_lines = []
+    for sym, m in summaries.items():
+        summary_lines.append(
+            f"{sym}: P/C_vol={m.get('Put/Call Vol','?')} | P/C_oi={m.get('Put/Call OI','?')} | "
+            f"Net_GEX=${m.get('Net GEX ($M)','?')}M | IV_skew={m.get('IV Skew (put-call)','?')} | "
+            f"Whale_call=${m.get('Whale Call Strike','?')} | Whale_put=${m.get('Whale Put Strike','?')} | "
+            f"Verdict: {m.get('verdict','?')}"
+        )
+    summary_str = "\n".join(summary_lines) if summary_lines else "No summary data."
+
+    prompt = f"""Date: {datetime.now():%Y-%m-%d}
+
+VOL/OI ANOMALY TABLE (sorted by score):
+{table}
+
+TICKER FLOW SUMMARIES (Put/Call, GEX, IV Skew, Whale Strikes):
+{summary_str}
+
+Analyze this options flow data:
+
+## 1. Top 5 Real Smart Money Signals
+For each: ticker, expiry, call/put, why this is REAL positioning vs noise/dealer hedging.
+Classify each as: DIRECTIONAL BET / EARNINGS PLAY / SHORT SQUEEZE SETUP / MACRO HEDGE / DEALER FLOW.
+
+## 2. Gamma Exposure Interpretation
+- Which tickers have dealers long gamma (suppressing volatility) vs short gamma (amplifying)?
+- What does this mean for expected price moves?
+
+## 3. IV Skew Signals
+- Any tickers showing extreme put skew (fear) or call skew (greed)?
+- Is the skew cheap or expensive vs historical norms?
+
+## 4. Whale Strike Magnet Analysis
+- The largest OI concentrations act as price magnets for market makers
+- Where are prices likely to gravitate toward before expiry?
+
+## 5. Convergence Alert (Highest Priority)
+- Any ticker where Vol/OI anomaly + bullish/bearish skew + GEX ALL point the same direction?
+- This is the "smart money consensus" signal
+
+## 6. TOP PRIORITY TRADE
+Ticker | Direction | Entry | Stop | Horizon | Conviction (1-10)
+One sentence: why this is the highest-asymmetry options flow signal right now."""
+
+    return call_gemini(SP["flow"], prompt, key)
+
 # ══════════════════════════════════════════════════════════════════════════════
 #  TABS
 # ══════════════════════════════════════════════════════════════════════════════
@@ -1147,14 +1367,14 @@ tabs = st.tabs([
     "Supply Chain", "Sector Dive", "Stock Stress",
     "Geo Trade", "Commodity", "Portfolio",
     "Compare", "Rotation", "Catalyst",
-    "Earnings", "SEC Filings", "Options Flow", "13F Tracker",
+    "Earnings", "SEC Filings", "Options Flow", "🎯 Smart Money Radar", "13F Tracker",
     "Watchdog", "Backtest", "Macro Regime", "Monetize", "Newsletter", "Info",
 ])
 (tab_dash, tab_scan, tab_dcf, tab_anti,
  tab_supply, tab_sector, tab_stock,
  tab_geo, tab_commodity, tab_port,
  tab_compare, tab_rotation, tab_calendar,
- tab_earnings, tab_sec, tab_options, tab_inst,
+ tab_earnings, tab_sec, tab_options, tab_flow_radar, tab_inst,
  tab_watchdog, tab_backtest, tab_macro, tab_monetize, tab_newsletter, tab_info) = tabs
 
 # ══════════════════════════════════════════════════════════════════════════════
@@ -1521,6 +1741,102 @@ with tab_options:
             with st.spinner(f"Scanning options flow for {t}..."):
                 result = run_options_flow(gemini_key, t)
             show_result(result,"lime"); dl_tg(result,f"options_{t}")
+
+# ══════════════════════════════════════════════════════════════════════════════
+#  SMART MONEY RADAR
+# ══════════════════════════════════════════════════════════════════════════════
+with tab_flow_radar:
+    st.markdown("### 🎯 Smart Money Radar")
+    st.markdown("Market-wide options sweep · Vol/OI anomaly · Put/Call ratio · Gamma Exposure · IV Skew · Whale strikes")
+
+    r1c1, r1c2, r1c3 = st.columns([3, 0.8, 0.8])
+    with r1c1:
+        radar_universe = st.text_area(
+            "Universe to scan",
+            value=",".join(STOCKS + ["SPY","QQQ","IWM","GLD","TLT"]),
+            height=65, key="ti_radar_universe"
+        )
+    with r1c2:
+        radar_min_score = st.slider("Min Vol/OI", min_value=2.0, max_value=8.0,
+                                    value=3.0, step=0.5, key="sl_radar_score")
+    with r1c3:
+        st.markdown("<br>", unsafe_allow_html=True)
+        radar_run = st.button("⚡ Scan Universe", type="primary", key="btn_radar_scan")
+
+    st.caption("Vol/OI > 3× = fresh institutional positioning. Includes GEX, IV skew, whale strikes, P/C ratio.")
+
+    if radar_run:
+        if key_check():
+            tickers_r = [t.strip().upper() for t in radar_universe.split(",") if t.strip()]
+            with st.status(f"Scanning {len(tickers_r)} tickers for unusual flow...", expanded=True) as radar_status:
+                st.write("Fetching options chains from Yahoo Finance...")
+                st.write("Calculating Vol/OI, GEX, IV skew, put/call ratios...")
+                df_flow, flow_summaries = scan_unusual_options(tickers_r, min_vol_oi=radar_min_score)
+                radar_status.update(label="✓ Scan complete", state="complete")
+
+            # ── Summary metrics row ───────────────────────────────────────────
+            if flow_summaries:
+                st.markdown('<div class="sec-label">Flow Summary by Ticker</div>', unsafe_allow_html=True)
+                sum_rows = []
+                for sym, m in flow_summaries.items():
+                    sum_rows.append({
+                        "Ticker":      sym,
+                        "P/C Vol":     m.get("Put/Call Vol","—"),
+                        "P/C OI":      m.get("Put/Call OI","—"),
+                        "Net GEX $M":  m.get("Net GEX ($M)","—"),
+                        "IV Skew":     m.get("IV Skew (put-call)","—"),
+                        "Whale Call":  f"${m.get('Whale Call Strike',0):,.0f}",
+                        "Whale Put":   f"${m.get('Whale Put Strike',0):,.0f}",
+                        "Flow Verdict": m.get("verdict","—"),
+                    })
+                df_sum = pd.DataFrame(sum_rows)
+                def _flow_color(v):
+                    if isinstance(v, str):
+                        if "BULLISH" in v: return "color:#22c55e;font-weight:600"
+                        if "BEARISH" in v: return "color:#ef4444;font-weight:600"
+                        if "VOLATILE" in v: return "color:#f59e0b;font-weight:600"
+                    return ""
+                st.dataframe(
+                    df_sum.style.map(_flow_color, subset=["Flow Verdict"]),
+                    width="stretch", hide_index=True
+                )
+
+            # ── Vol/OI anomaly table ──────────────────────────────────────────
+            if not df_flow.empty:
+                df_top = df_flow[df_flow["Score"] >= radar_min_score].sort_values("Score", ascending=False)
+                if not df_top.empty:
+                    st.markdown('<div class="sec-label">Vol/OI Anomalies — Possible Institutional Sweeps</div>', unsafe_allow_html=True)
+                    def _side_color(v):
+                        if v == "CALL": return "color:#22c55e;font-weight:700"
+                        if v == "PUT":  return "color:#ef4444;font-weight:700"
+                        return ""
+                    def _score_color(v):
+                        if isinstance(v,(int,float)):
+                            if v >= 8: return "color:#22c55e;font-weight:700"
+                            if v >= 6: return "color:#f59e0b"
+                        return ""
+                    display_cols = [c for c in ["Ticker","Expiry","Side","Vol","OI","Vol/OI","Avg IV%","Score","Direction","Signal"] if c in df_top.columns]
+                    st.dataframe(
+                        df_top[display_cols].style.map(_side_color,subset=["Side"]).map(_score_color,subset=["Score"]),
+                        width="stretch", hide_index=True, height=320
+                    )
+                else:
+                    st.info(f"No anomalies above Vol/OI threshold of {radar_min_score}×. Try lowering the slider.")
+            else:
+                st.info("No unusual options activity detected. Markets may be quiet or data unavailable.")
+
+            # ── AI interpretation ─────────────────────────────────────────────
+            if not df_flow.empty or flow_summaries:
+                st.markdown("---")
+                if st.button("🧠 AI Smart Money Interpretation", type="primary", key="btn_radar_ai"):
+                    with st.spinner("Smart Money Desk synthesizing signals..."):
+                        ai_text = run_flow_radar_ai(gemini_key, df_flow, flow_summaries)
+                    show_result(ai_text, "lime")
+                    st.session_state["last_radar"] = ai_text
+                    dl_tg(ai_text, "smart_money_radar")
+
+            elif not flow_summaries:
+                st.markdown('<div class="alert-ok">✓ Clean scan — no significant unusual options activity in this universe.</div>', unsafe_allow_html=True)
 
 # ══════════════════════════════════════════════════════════════════════════════
 #  13F TRACKER
