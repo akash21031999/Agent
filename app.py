@@ -178,28 +178,28 @@ with st.sidebar:
     st.divider()
 
     st.markdown("**AI Engine**")
-    gemini_key = st.text_input("Gemini API Key", type="password", placeholder="AIza...",
+    gemini_key = st.text_input("Gemini API Key", type="password", placeholder="AIza...", key="si_gemini",
                                help="Free · aistudio.google.com/app/apikey")
 
     st.markdown("**Data Providers** *(optional — free tiers)*")
     with st.expander("Configure Data APIs"):
-        finnhub_key = st.text_input("Finnhub",       type="password", placeholder="60 calls/min",
+        finnhub_key = st.text_input("Finnhub",       type="password", placeholder="60 calls/min", key="si_finnhub",
                                     help="finnhub.io — real-time quotes, news, sentiment")
-        fmp_key     = st.text_input("FMP",            type="password", placeholder="250 calls/day",
+        fmp_key     = st.text_input("FMP",            type="password", placeholder="250 calls/day", key="si_fmp",
                                     help="financialmodelingprep.com — financials, DCF")
-        av_key      = st.text_input("Alpha Vantage",  type="password", placeholder="25 calls/day",
+        av_key      = st.text_input("Alpha Vantage",  type="password", placeholder="25 calls/day", key="si_av",
                                     help="alphavantage.co — technicals, RSI, MACD")
-        polygon_key = st.text_input("Polygon.io",     type="password", placeholder="5 calls/min",
+        polygon_key = st.text_input("Polygon.io",     type="password", placeholder="5 calls/min", key="si_polygon",
                                     help="polygon.io — US market data, normalized")
     st.caption("All providers have free tiers. App works without any data keys using Yahoo Finance fallback.")
 
     st.markdown("**Alerts**")
-    tg_token = st.text_input("Telegram Token", type="password", placeholder="123456:ABC...")
-    tg_chat  = st.text_input("Chat ID",        placeholder="-100123456789")
+    tg_token = st.text_input("Telegram Token", type="password", placeholder="123456:ABC...", key="si_tg_token")
+    tg_chat  = st.text_input("Chat ID",        placeholder="-100123456789", key="si_tg_chat")
 
     st.markdown("**Watchlist**")
-    stocks_raw  = st.text_area("Stocks",   value="NVDA,TSM,ASML,PLTR,IONQ,RKLB,HIMS,CELH,NVO,MELI", height=70)
-    sectors_raw = st.text_area("Sectors",  value="XLK,XLE,XLF,XLV,XBI,ARKK,GDX,COPX,ITB,XAR",      height=55)
+    stocks_raw  = st.text_area("Stocks",   value="NVDA,TSM,ASML,PLTR,IONQ,RKLB,HIMS,CELH,NVO,MELI", key="si_stocks", height=70)
+    sectors_raw = st.text_area("Sectors",  value="XLK,XLE,XLF,XLV,XBI,ARKK,GDX,COPX,ITB,XAR", key="si_sectors",      height=55)
 
     st.divider()
     # Live status
@@ -1263,7 +1263,7 @@ with tab_dcf:
         st.info("Add FMP API key in sidebar for real financial data. Without it, AI estimates from public data.")
 
     c1,c2 = st.columns([3,1])
-    with c1: dcf_ticker = st.text_input("Ticker", placeholder="NVDA · PLTR · TSLA · AXTI", label_visibility="collapsed")
+    with c1: dcf_ticker = st.text_input("Ticker", placeholder="NVDA · PLTR · TSLA · AXTI", label_visibility="collapsed", key="ti_dcf")
     with c2: dcf_run = st.button("Run DCF →", type="primary", key="btn_dcf")
 
     if dcf_run:
@@ -1297,7 +1297,7 @@ with tab_anti:
     st.markdown("### ⚖ Anti-Portfolio Risk Agent")
     st.markdown("numpy correlation matrix · 5-scenario stress test · Double-down detection · Specific hedges")
 
-    holdings_input = st.text_area("Your Holdings",
+    holdings_input = st.text_area("Your Holdings", key="ta_anti_port",
         placeholder="NVDA 20%, AAPL 15%, MSFT 15%, PLTR 10%, TSLA 8%, Cash 15%, BTC 7%, Gold 5%\nOr just tickers: NVDA, AAPL, MSFT, PLTR",
         height=90)
     anti_run = st.button("Stress Test Portfolio →", type="primary", key="btn_anti_port")
@@ -1335,7 +1335,7 @@ with tab_supply:
     st.markdown("### Supply Chain Forensic Mapper")
     st.markdown("Map the nervous system — find the company the giants cannot live without.")
     c1,c2 = st.columns([3,1])
-    with c1: supply_t = st.text_input("Company or Sector", placeholder="NVDA · EUV Lithography · Solid State Batteries", label_visibility="collapsed")
+    with c1: supply_t = st.text_input("Company or Sector", placeholder="NVDA · EUV Lithography · Solid State Batteries", label_visibility="collapsed", key="ti_supply")
     with c2: supply_r = st.button("Map Chain →", type="primary", key="btn_supply")
     if supply_r:
         if key_check() and supply_t:
@@ -1364,7 +1364,7 @@ with tab_sector:
     st.markdown("### Sector Deep Dive")
     st.markdown("Cycle position · Hidden gems · Institutional flow · Best bet")
     c1,c2 = st.columns([3,1])
-    with c1: sector_t = st.text_input("Sector", placeholder="Defense · Biotech · Semiconductors · Clean Energy", label_visibility="collapsed")
+    with c1: sector_t = st.text_input("Sector", placeholder="Defense · Biotech · Semiconductors · Clean Energy", label_visibility="collapsed", key="ti_sector")
     with c2: sector_r = st.button("Dive Deep →", type="primary", key="btn_sector")
     if sector_r:
         if key_check() and sector_t:
@@ -1379,7 +1379,7 @@ with tab_stock:
     st.markdown("### Single Stock Stress Test")
     st.markdown("Forensic bull/bear · Accounting flags · Insider signals · Supplier alternatives")
     c1,c2 = st.columns([3,1])
-    with c1: stress_t = st.text_input("Ticker", placeholder="NVDA · PLTR · TSLA · RKLB", label_visibility="collapsed")
+    with c1: stress_t = st.text_input("Ticker", placeholder="NVDA · PLTR · TSLA · RKLB", label_visibility="collapsed", key="ti_stress")
     with c2: stress_r = st.button("Stress Test →", type="primary", key="btn_stock_stress")
     if stress_r:
         if key_check() and stress_t:
@@ -1395,7 +1395,7 @@ with tab_geo:
     st.markdown("### Geopolitical Trade Finder")
     st.markdown("Winners · Losers · Second-order plays · Specific hedge")
     c1,c2 = st.columns([3,1])
-    with c1: geo_t = st.text_input("Scenario", placeholder="Taiwan conflict · US-China tariffs · OPEC+ cut", label_visibility="collapsed")
+    with c1: geo_t = st.text_input("Scenario", placeholder="Taiwan conflict · US-China tariffs · OPEC+ cut", label_visibility="collapsed", key="ti_geo")
     with c2: geo_r = st.button("Find Trades →", type="primary", key="btn_geo")
     if geo_r:
         if key_check() and geo_t:
@@ -1410,7 +1410,7 @@ with tab_commodity:
     st.markdown("### Commodity Chain Tracer")
     st.markdown("Full upstream/downstream · Find the moat and the best asymmetric play")
     c1,c2 = st.columns([3,1])
-    with c1: comm_t = st.text_input("Commodity", placeholder="Lithium · Uranium · Copper · Rare Earth · LNG", label_visibility="collapsed")
+    with c1: comm_t = st.text_input("Commodity", placeholder="Lithium · Uranium · Copper · Rare Earth · LNG", label_visibility="collapsed", key="ti_commodity")
     with c2: comm_r = st.button("Trace Chain →", type="primary", key="btn_commodity")
     if comm_r:
         if key_check() and comm_t:
@@ -1424,7 +1424,7 @@ with tab_commodity:
 with tab_port:
     st.markdown("### Portfolio Stress Tester")
     st.markdown("5-scenario stress test · Concentration risk · Hedging recommendations")
-    port_input = st.text_area("Holdings", placeholder="NVDA 15%, AAPL 10%, MSFT 10%, PLTR 8%, Cash 20%", height=80)
+    port_input = st.text_area("Holdings", placeholder="NVDA 15%, AAPL 10%, MSFT 10%, PLTR 8%, Cash 20%", key="ta_port", height=80)
     if st.button("Stress Test →", type="primary", key="btn_portfolio_stress"):
         if key_check() and port_input.strip():
             with st.spinner("Running stress test..."):
@@ -1465,7 +1465,7 @@ with tab_rotation:
 with tab_calendar:
     st.markdown("### Catalyst Calendar")
     st.markdown("90-day event calendar ranked by asymmetric potential · This week's best setup")
-    cal_input = st.text_input("Watchlist", value=",".join(STOCKS[:8]))
+    cal_input = st.text_input("Watchlist", value=",".join(STOCKS[:8]), key="ti_calendar_wl")
     if st.button("Generate Calendar →", type="primary", key="btn_calendar"):
         if key_check() and cal_input.strip():
             with st.spinner("Scanning for catalysts..."):
@@ -1544,10 +1544,10 @@ with tab_watchdog:
     st.markdown("### Smart Watchdog")
     st.markdown("Custom triggers · numpy-calculated signals · Auto-fires Telegram when condition met")
     wc1,wc2 = st.columns([2,1])
-    with wc1: wd_list = st.text_input("Watchlist", value=",".join(STOCKS))
+    with wc1: wd_list = st.text_input("Watchlist", value=",".join(STOCKS), key="ti_watchdog")
     with wc2: wd_triggers = st.multiselect("Triggers",
         ["RSI < 30","RSI > 75","Drop > 8% 1M","Momentum >15%","Near 52W High"],
-        default=["RSI < 30","Drop > 8% 1M"])
+        default=["RSI < 30","Drop > 8% 1M"], key="ms_triggers")
     if st.button("Run Watchdog →", type="primary", key="btn_watchdog"):
         if key_check():
             tks = [t.strip() for t in wd_list.split(",") if t.strip()]
@@ -1576,7 +1576,7 @@ with tab_backtest:
     st.markdown("Test thesis against 2008 · 2020 · 2022 · 2024 regimes · Proof of concept before risking capital")
     bc1,bc2 = st.columns([2,1])
     with bc1:
-        bt_thesis = st.text_area("Investment Thesis",
+        bt_thesis = st.text_area("Investment Thesis", key="ta_backtest",
             placeholder="PLTR is undervalued due to AI government contract tailwind and strong insider buying...",
             height=85)
     with bc2:
@@ -1632,7 +1632,7 @@ with tab_monetize:
     if st.session_state.get("last_research"): src_options["Supply Chain Research"] = st.session_state["last_research"]
 
     if src_options:
-        src_lbl = st.selectbox("Source", list(src_options.keys()))
+        src_lbl = st.selectbox("Source", list(src_options.keys()), key="sb_monetize_src")
         src     = src_options[src_lbl]
         with st.expander("Preview"):
             st.write(src[:600]+"..." if len(src)>600 else src)
@@ -1686,8 +1686,8 @@ with tab_newsletter:
     st.markdown("### Newsletter Generator")
     st.markdown("Full weekly edition from your scan results — ready for Substack or Beehiiv")
     nc1,nc2 = st.columns(2)
-    with nc1: nl_name = st.text_input("Newsletter Name", value="Alpha Intelligence Weekly")
-    with nc2: nl_author = st.text_input("Author", value="Alpha Machine")
+    with nc1: nl_name = st.text_input("Newsletter Name", value="Alpha Intelligence Weekly", key="ti_nl_name")
+    with nc2: nl_author = st.text_input("Author", value="Alpha Machine", key="ti_nl_author")
     if st.button("Generate Newsletter →", type="primary", key="btn_newsletter"):
         if key_check():
             scan = st.session_state.get("last_scan",{})
