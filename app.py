@@ -214,7 +214,7 @@ with st.sidebar:
     if tg_token and tg_chat:
         st.markdown('<span style="color:#22c55e;font-size:0.8rem">● Telegram connected</span>', unsafe_allow_html=True)
 
-    if st.button("Reset session", use_container_width=True):
+    if st.button("Reset session", use_container_width=True, key="btn_reset"):
         st.session_state.clear(); st.rerun()
 
 STOCKS  = [s.strip() for s in stocks_raw.split(",") if s.strip()]
@@ -1226,7 +1226,7 @@ with tab_scan:
     st.markdown("### 5-Agent Asymmetric Bet Scanner")
     st.markdown("Macro Scout · Sector Analyst · Stock Sniper · Contrarian · CIO Synthesis — parallel execution")
     if key_check():
-        if st.button("Run Alpha Scan →", type="primary"):
+        if st.button("Run Alpha Scan →", type="primary", key="btn_alpha_scan"):
             prog = st.progress(0, "Loading market data...")
             try:
                 prog.progress(20, "4 agents running in parallel (~2-3 min)...")
@@ -1264,7 +1264,7 @@ with tab_dcf:
 
     c1,c2 = st.columns([3,1])
     with c1: dcf_ticker = st.text_input("Ticker", placeholder="NVDA · PLTR · TSLA · AXTI", label_visibility="collapsed")
-    with c2: dcf_run = st.button("Run DCF →", type="primary")
+    with c2: dcf_run = st.button("Run DCF →", type="primary", key="btn_dcf")
 
     if dcf_run:
         if key_check() and dcf_ticker:
@@ -1300,7 +1300,7 @@ with tab_anti:
     holdings_input = st.text_area("Your Holdings",
         placeholder="NVDA 20%, AAPL 15%, MSFT 15%, PLTR 10%, TSLA 8%, Cash 15%, BTC 7%, Gold 5%\nOr just tickers: NVDA, AAPL, MSFT, PLTR",
         height=90)
-    anti_run = st.button("Stress Test Portfolio →", type="primary")
+    anti_run = st.button("Stress Test Portfolio →", type="primary", key="btn_anti_port")
 
     if anti_run:
         if key_check() and holdings_input.strip():
@@ -1336,7 +1336,7 @@ with tab_supply:
     st.markdown("Map the nervous system — find the company the giants cannot live without.")
     c1,c2 = st.columns([3,1])
     with c1: supply_t = st.text_input("Company or Sector", placeholder="NVDA · EUV Lithography · Solid State Batteries", label_visibility="collapsed")
-    with c2: supply_r = st.button("Map Chain →", type="primary")
+    with c2: supply_r = st.button("Map Chain →", type="primary", key="btn_supply")
     if supply_r:
         if key_check() and supply_t:
             with st.status(f"Mapping {supply_t} supply chain...", expanded=True) as s:
@@ -1365,7 +1365,7 @@ with tab_sector:
     st.markdown("Cycle position · Hidden gems · Institutional flow · Best bet")
     c1,c2 = st.columns([3,1])
     with c1: sector_t = st.text_input("Sector", placeholder="Defense · Biotech · Semiconductors · Clean Energy", label_visibility="collapsed")
-    with c2: sector_r = st.button("Dive Deep →", type="primary")
+    with c2: sector_r = st.button("Dive Deep →", type="primary", key="btn_sector")
     if sector_r:
         if key_check() and sector_t:
             with st.spinner(f"Analyzing {sector_t}..."):
@@ -1380,7 +1380,7 @@ with tab_stock:
     st.markdown("Forensic bull/bear · Accounting flags · Insider signals · Supplier alternatives")
     c1,c2 = st.columns([3,1])
     with c1: stress_t = st.text_input("Ticker", placeholder="NVDA · PLTR · TSLA · RKLB", label_visibility="collapsed")
-    with c2: stress_r = st.button("Stress Test →", type="primary")
+    with c2: stress_r = st.button("Stress Test →", type="primary", key="btn_stock_stress")
     if stress_r:
         if key_check() and stress_t:
             t = stress_t.strip().upper().replace("$","")
@@ -1396,7 +1396,7 @@ with tab_geo:
     st.markdown("Winners · Losers · Second-order plays · Specific hedge")
     c1,c2 = st.columns([3,1])
     with c1: geo_t = st.text_input("Scenario", placeholder="Taiwan conflict · US-China tariffs · OPEC+ cut", label_visibility="collapsed")
-    with c2: geo_r = st.button("Find Trades →", type="primary")
+    with c2: geo_r = st.button("Find Trades →", type="primary", key="btn_geo")
     if geo_r:
         if key_check() and geo_t:
             with st.spinner(f"Mapping trades for: {geo_t}..."):
@@ -1411,7 +1411,7 @@ with tab_commodity:
     st.markdown("Full upstream/downstream · Find the moat and the best asymmetric play")
     c1,c2 = st.columns([3,1])
     with c1: comm_t = st.text_input("Commodity", placeholder="Lithium · Uranium · Copper · Rare Earth · LNG", label_visibility="collapsed")
-    with c2: comm_r = st.button("Trace Chain →", type="primary")
+    with c2: comm_r = st.button("Trace Chain →", type="primary", key="btn_commodity")
     if comm_r:
         if key_check() and comm_t:
             with st.spinner(f"Tracing {comm_t} chain..."):
@@ -1425,7 +1425,7 @@ with tab_port:
     st.markdown("### Portfolio Stress Tester")
     st.markdown("5-scenario stress test · Concentration risk · Hedging recommendations")
     port_input = st.text_area("Holdings", placeholder="NVDA 15%, AAPL 10%, MSFT 10%, PLTR 8%, Cash 20%", height=80)
-    if st.button("Stress Test →", type="primary"):
+    if st.button("Stress Test →", type="primary", key="btn_portfolio_stress"):
         if key_check() and port_input.strip():
             with st.spinner("Running stress test..."):
                 result = run_portfolio_stress(gemini_key, port_input)
@@ -1441,7 +1441,7 @@ with tab_compare:
     with ca: ta = st.text_input("Ticker A", placeholder="NVDA", key="ta")
     with cv: st.markdown("<br>**vs**", unsafe_allow_html=True)
     with cb: tb = st.text_input("Ticker B", placeholder="AMD", key="tb")
-    if st.button("Compare →", type="primary"):
+    if st.button("Compare →", type="primary", key="btn_compare"):
         if key_check() and ta and tb:
             with st.spinner(f"Comparing {ta.upper()} vs {tb.upper()}..."):
                 result = run_relative_value(gemini_key, ta.upper(), tb.upper())
@@ -1454,7 +1454,7 @@ with tab_rotation:
     st.markdown("### Sector Rotation Timer")
     st.markdown("Cycle phase · What rotates next · Highest conviction rotation trade")
     if key_check():
-        if st.button("Analyze Rotation →", type="primary"):
+        if st.button("Analyze Rotation →", type="primary", key="btn_rotation"):
             with st.spinner("Analyzing economic cycle..."):
                 result = run_rotation_timer(gemini_key)
             show_result(result,"purple"); dl_tg(result,"rotation")
@@ -1466,7 +1466,7 @@ with tab_calendar:
     st.markdown("### Catalyst Calendar")
     st.markdown("90-day event calendar ranked by asymmetric potential · This week's best setup")
     cal_input = st.text_input("Watchlist", value=",".join(STOCKS[:8]))
-    if st.button("Generate Calendar →", type="primary"):
+    if st.button("Generate Calendar →", type="primary", key="btn_calendar"):
         if key_check() and cal_input.strip():
             with st.spinner("Scanning for catalysts..."):
                 result = run_catalyst_calendar(gemini_key, cal_input)
@@ -1480,7 +1480,7 @@ with tab_earnings:
     st.markdown("Tone shift detection · What CEO is hiding · Trading implication · Credibility score")
     c1,c2 = st.columns([3,1])
     with c1: earn_t = st.text_input("Ticker", placeholder="NVDA · AAPL · MSFT · AMZN", label_visibility="collapsed", key="earn_k")
-    with c2: earn_r = st.button("Analyze Call →", type="primary")
+    with c2: earn_r = st.button("Analyze Call →", type="primary", key="btn_earnings")
     if earn_r:
         if key_check() and earn_t:
             t = earn_t.strip().upper().replace("$","")
@@ -1498,7 +1498,7 @@ with tab_sec:
         st.markdown('<div class="alert-ok">✓ Finnhub connected — real insider transaction data</div>', unsafe_allow_html=True)
     c1,c2 = st.columns([3,1])
     with c1: sec_t = st.text_input("Ticker", placeholder="PLTR · NVDA · TSLA", label_visibility="collapsed", key="sec_k")
-    with c2: sec_r = st.button("Scan Filings →", type="primary")
+    with c2: sec_r = st.button("Scan Filings →", type="primary", key="btn_sec")
     if sec_r:
         if key_check() and sec_t:
             t = sec_t.strip().upper().replace("$","")
@@ -1514,7 +1514,7 @@ with tab_options:
     st.markdown("Unusual activity · Smart money positioning · IV vs HV · Optimal strategy")
     c1,c2 = st.columns([3,1])
     with c1: opt_t = st.text_input("Ticker", placeholder="NVDA · SPY · TSLA", label_visibility="collapsed", key="opt_k")
-    with c2: opt_r = st.button("Scan Flow →", type="primary")
+    with c2: opt_r = st.button("Scan Flow →", type="primary", key="btn_options")
     if opt_r:
         if key_check() and opt_t:
             t = opt_t.strip().upper().replace("$","")
@@ -1530,7 +1530,7 @@ with tab_inst:
     st.markdown("Ticker → who owns it, who bought/sold. Manager name → full 13F changes.")
     c1,c2 = st.columns([3,1])
     with c1: inst_t = st.text_input("Ticker or Manager", placeholder="NVDA  ·  Soros  ·  Burry  ·  Ackman", label_visibility="collapsed", key="inst_k")
-    with c2: inst_r = st.button("Track →", type="primary")
+    with c2: inst_r = st.button("Track →", type="primary", key="btn_13f")
     if inst_r:
         if key_check() and inst_t:
             with st.spinner(f"Fetching 13F for {inst_t}..."):
@@ -1548,7 +1548,7 @@ with tab_watchdog:
     with wc2: wd_triggers = st.multiselect("Triggers",
         ["RSI < 30","RSI > 75","Drop > 8% 1M","Momentum >15%","Near 52W High"],
         default=["RSI < 30","Drop > 8% 1M"])
-    if st.button("Run Watchdog →", type="primary"):
+    if st.button("Run Watchdog →", type="primary", key="btn_watchdog"):
         if key_check():
             tks = [t.strip() for t in wd_list.split(",") if t.strip()]
             with st.spinner("Scanning..."):
@@ -1581,7 +1581,7 @@ with tab_backtest:
             height=85)
     with bc2:
         bt_ticker = st.text_input("Primary Ticker", placeholder="PLTR · NVDA · CCJ", key="bt_k")
-        bt_run = st.button("Backtest →", type="primary")
+        bt_run = st.button("Backtest →", type="primary", key="btn_backtest")
     if bt_run:
         if key_check() and bt_thesis and bt_ticker:
             t = bt_ticker.strip().upper().replace("$","")
@@ -1639,7 +1639,7 @@ with tab_monetize:
         st.markdown("---")
         col1,col2,col3,col4 = st.columns(4)
         with col1:
-            if st.button("𝕏 Thread", type="primary", use_container_width=True):
+            if st.button("𝕏 Thread", type="primary", use_container_width=True, key="btn_xthread"):
                 with st.status("Writing X thread...", expanded=True) as s:
                     out=st.empty(); full=""
                     for chunk in stream_gemini("You are a viral financial X creator. Write 7-tweet threads that go viral by sharing alpha retail can't find.",
@@ -1648,7 +1648,7 @@ with tab_monetize:
                     s.update(label="✓ Thread ready", state="complete")
                 st.session_state["monetize_out"] = full
         with col2:
-            if st.button("Substack", type="primary", use_container_width=True):
+            if st.button("Substack", type="primary", use_container_width=True, key="btn_substack"):
                 with st.status("Writing Substack post...", expanded=True) as s:
                     out=st.empty(); full=""
                     for chunk in stream_gemini("You write like Howard Marks meets Paul Graham — deep, contrarian, beautifully structured.",
@@ -1657,7 +1657,7 @@ with tab_monetize:
                     s.update(label="✓ Post ready", state="complete")
                 st.session_state["monetize_out"] = full
         with col3:
-            if st.button("LinkedIn", type="primary", use_container_width=True):
+            if st.button("LinkedIn", type="primary", use_container_width=True, key="btn_linkedin"):
                 with st.status("Writing LinkedIn post...", expanded=True) as s:
                     out=st.empty(); full=""
                     for chunk in stream_gemini("You write LinkedIn posts that get 50k+ impressions by being specific and contrarian.",
@@ -1666,7 +1666,7 @@ with tab_monetize:
                     s.update(label="✓ Post ready", state="complete")
                 st.session_state["monetize_out"] = full
         with col4:
-            if st.button("TikTok", type="primary", use_container_width=True):
+            if st.button("TikTok", type="primary", use_container_width=True, key="btn_tiktok"):
                 with st.status("Writing TikTok script...", expanded=True) as s:
                     out=st.empty(); full=""
                     for chunk in stream_gemini("You write viral 60-second TikTok finance scripts. Short sentences. No jargon.",
@@ -1688,7 +1688,7 @@ with tab_newsletter:
     nc1,nc2 = st.columns(2)
     with nc1: nl_name = st.text_input("Newsletter Name", value="Alpha Intelligence Weekly")
     with nc2: nl_author = st.text_input("Author", value="Alpha Machine")
-    if st.button("Generate Newsletter →", type="primary"):
+    if st.button("Generate Newsletter →", type="primary", key="btn_newsletter"):
         if key_check():
             scan = st.session_state.get("last_scan",{})
             with st.spinner("Writing newsletter..."):
