@@ -20,296 +20,219 @@ from google.genai import types
 # ══════════════════════════════════════════════════════════════════════════════
 st.markdown("""
 <style>
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
+/* ══════════════════════════════════════════════════════════
+   ALPHA MACHINE v6 — WHITE INSTITUTIONAL DESIGN
+   ══════════════════════════════════════════════════════════ */
 
-html,body,[data-testid="stAppViewContainer"]{background:#ffffff;font-family:'Inter',sans-serif;color:#0f172a;}
-[data-testid="stSidebar"]{background:#f8fafc;border-right:1px solid #e2e8f0;}
-[data-testid="stSidebar"] *{color:#475569 !important;}
-.block-container{padding:1.2rem 1.8rem 3rem;max-width:1500px;}
-h1,h2,h3,h4{color:#0f172a;font-weight:600;letter-spacing:-0.3px;}
-p,li{color:#475569;line-height:1.75;}
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap');
 
-/* ══ TOP BAR ══ */
-.topbar {
-    display: flex; align-items: center; justify-content: space-between;
-    padding: 14px 0 18px; border-bottom: 2px solid #f1f5f9; margin-bottom: 20px;
-}
-.logo { font-size: 1.3rem; font-weight: 800; letter-spacing: -1px; color: #0f172a !important; }
-.logo span { color: #2563eb !important; }
-.topbar-meta { font-size: 0.7rem; color: #94a3b8 !important; letter-spacing: 1px; text-transform: uppercase; }
-
-/* ══ MACRO STRIP ══ */
-.macro-strip {
-    display: flex; gap: 6px; margin-bottom: 20px;
-    overflow-x: auto; padding-bottom: 2px;
-    scrollbar-width: thin; scrollbar-color: #e2e8f0 transparent;
-}
-.macro-strip::-webkit-scrollbar { height: 3px; }
-.macro-strip::-webkit-scrollbar-thumb { background: #e2e8f0; border-radius: 3px; }
-.mbox {
-    flex: 1; min-width: 90px; background: #f8fafc;
-    border: 1px solid #e2e8f0; border-radius: 8px;
-    padding: 10px 12px; text-align: center;
-    transition: border-color 0.15s, box-shadow 0.15s;
-}
-.mbox:hover { border-color: #2563eb; box-shadow: 0 1px 6px rgba(37,99,235,0.08); }
-.mlbl { font-size: 0.6rem; color: #94a3b8 !important; text-transform: uppercase;
-        letter-spacing: 1.5px; display: block; margin-bottom: 3px; font-weight: 600; }
-.mprice { font-size: 0.98rem; font-weight: 700; color: #0f172a !important;
-          font-family: 'JetBrains Mono', monospace; display: block; }
-.up   { color: #16a34a !important; font-size: 0.7rem; font-weight: 600; }
-.dn   { color: #dc2626 !important; font-size: 0.7rem; font-weight: 600; }
-.flat { color: #94a3b8 !important; font-size: 0.7rem; }
-
-/* ══ SEARCH ══ */
-.search-wrap {
-    background: #f8fafc; border: 1.5px solid #e2e8f0;
-    border-radius: 12px; padding: 18px 22px; margin-bottom: 22px;
-    box-shadow: 0 1px 4px rgba(0,0,0,0.04);
-}
-.search-hint { font-size: 0.73rem; color: #64748b !important; margin-top: 10px; line-height: 1.65; }
-
-/* ══ STATUS BAR ══ */
-.statusbar {
-    display: flex; gap: 18px; align-items: center; flex-wrap: wrap;
-    padding: 9px 16px; background: #f8fafc;
-    border: 1px solid #e2e8f0; border-radius: 8px;
-    margin-bottom: 18px;
-}
-.sitem { font-size: 0.72rem; color: #475569 !important; display: flex; align-items: center; gap: 6px; }
-.dot-green { width:7px;height:7px;border-radius:50%;background:#16a34a;display:inline-block;flex-shrink:0; }
-.dot-amber { width:7px;height:7px;border-radius:50%;background:#d97706;display:inline-block;flex-shrink:0; }
-.dot-red   { width:7px;height:7px;border-radius:50%;background:#dc2626;display:inline-block;flex-shrink:0; }
-.dot-blue  { width:7px;height:7px;border-radius:50%;background:#2563eb;display:inline-block;flex-shrink:0; }
-.dot-purple{ width:7px;height:7px;border-radius:50%;background:#7c3aed;display:inline-block;flex-shrink:0; }
-
-/* ══ SIGNAL FEED CARDS ══ */
-.sig-card {
-    background: #ffffff; border: 1px solid #e2e8f0;
-    border-radius: 10px; padding: 16px 20px; margin: 8px 0;
-    transition: border-color 0.15s, box-shadow 0.15s;
-    box-shadow: 0 1px 3px rgba(0,0,0,0.04);
-}
-.sig-card:hover { border-color: #2563eb; box-shadow: 0 4px 12px rgba(37,99,235,0.1); }
-.sig-card.dark_money { border-left: 4px solid #65a30d; }
-.sig-card.pentagon   { border-left: 4px solid #2563eb; }
-.sig-card.patent     { border-left: 4px solid #7c3aed; }
-.sig-card.insider    { border-left: 4px solid #16a34a; }
-.sig-card.macro      { border-left: 4px solid #d97706; }
-.sig-card.technical  { border-left: 4px solid #0284c7; }
-.sig-top { display:flex; align-items:center; gap:10px; margin-bottom:7px; flex-wrap:wrap; }
-.sig-score {
-    font-size: 0.72rem; font-weight: 700; padding: 2px 8px; border-radius: 5px;
-    font-family: 'JetBrains Mono', monospace; flex-shrink: 0;
-}
-.score-high { background: #dcfce7; color: #166534 !important; }
-.score-med  { background: #fef3c7; color: #92400e !important; }
-.score-low  { background: #f1f5f9; color: #64748b !important; }
-.sig-type   { font-size: 0.63rem; font-weight: 700; letter-spacing: 1.5px; text-transform: uppercase; color: #94a3b8 !important; }
-.sig-ticker { font-size: 1.05rem; font-weight: 800; color: #0f172a !important; font-family: 'JetBrains Mono', monospace; }
-.sig-title  { font-size: 0.86rem; color: #334155 !important; margin: 4px 0 2px; font-weight: 500; }
-.sig-detail { font-size: 0.78rem; color: #64748b !important; margin: 2px 0; }
-.sig-supply { font-size: 0.75rem; color: #94a3b8 !important; margin-top: 5px; }
-.sig-supply span { color: #2563eb !important; font-weight: 600; }
-.sig-meta   { font-size: 0.67rem; color: #94a3b8 !important; margin-top: 7px; }
-
-/* ══ REPORT — THE KEY FIX FOR OVERFLOW + ITALIC ══ */
-.report-wrap {
-    background: #ffffff;
-    border: 1px solid #e2e8f0;
-    border-radius: 10px;
-    padding: 26px 30px;
-    margin: 14px 0;
-    box-shadow: 0 1px 4px rgba(0,0,0,0.05);
-    /* Overflow fix — content scrolls horizontally if truly too wide */
-    overflow: hidden;
-    max-width: 100%;
+/* GLOBAL RESET */
+*, *::before, *::after {
     box-sizing: border-box;
-}
-.report-wrap.blue   { border-left: 4px solid #2563eb; }
-.report-wrap.green  { border-left: 4px solid #16a34a; }
-.report-wrap.amber  { border-left: 4px solid #d97706; }
-.report-wrap.red    { border-left: 4px solid #dc2626; }
-.report-wrap.purple { border-left: 4px solid #7c3aed; }
-.report-wrap.lime   { border-left: 4px solid #65a30d; }
-.report-wrap.teal   { border-left: 4px solid #0d9488; }
-.report-wrap.cyan   { border-left: 4px solid #0284c7; }
-.report-wrap.orange { border-left: 4px solid #ea580c; }
-.report-wrap.rose   { border-left: 4px solid #e11d48; }
-.report-wrap.pink   { border-left: 4px solid #db2777; }
-
-/* Everything inside report — enforce readable prose */
-.report-wrap * {
     font-style: normal !important;
-    max-width: 100% !important;
-    word-wrap: break-word !important;
-    overflow-wrap: break-word !important;
+    -webkit-font-smoothing: antialiased;
 }
-.report-wrap p, .report-wrap li {
-    color: #334155 !important;
-    line-height: 1.8 !important;
-    font-size: 0.93rem !important;
-    font-style: normal !important;
-    margin: 6px 0 !important;
-}
-.report-wrap h1,.report-wrap h2,.report-wrap h3,.report-wrap h4 {
-    color: #0f172a !important;
-    font-weight: 700 !important;
-    font-style: normal !important;
-    margin: 18px 0 6px !important;
-    padding-bottom: 4px !important;
-}
-.report-wrap h2 { border-bottom: 1px solid #f1f5f9; }
-.report-wrap h3 { color: #1e40af !important; font-size: 0.95rem !important; }
-.report-wrap strong, .report-wrap b { color: #0f172a !important; font-weight: 700 !important; }
-.report-wrap em { font-style: normal !important; color: #334155 !important; }
-.report-wrap code {
-    background: #f1f5f9 !important; color: #0f172a !important;
-    padding: 1px 6px !important; border-radius: 4px !important;
-    font-family: 'JetBrains Mono', monospace !important;
-    font-size: 0.84em !important;
-    word-break: break-all !important;
-}
-.report-wrap pre {
-    background: #f8fafc !important; border: 1px solid #e2e8f0 !important;
-    border-radius: 6px !important; padding: 12px 16px !important;
-    overflow-x: auto !important; max-width: 100% !important;
-    white-space: pre-wrap !important; word-break: break-word !important;
-}
-.report-wrap table {
-    width: 100% !important; border-collapse: collapse !important;
-    font-size: 0.87rem !important; margin: 12px 0 !important;
-    display: block !important; overflow-x: auto !important;
-}
-.report-wrap th {
-    background: #f1f5f9 !important; color: #0f172a !important;
-    font-weight: 600 !important; padding: 8px 12px !important;
-    text-align: left !important; border: 1px solid #e2e8f0 !important;
-    white-space: nowrap !important;
-}
-.report-wrap td {
-    padding: 7px 12px !important; border: 1px solid #e2e8f0 !important;
-    color: #334155 !important; vertical-align: top !important;
-}
-.report-wrap tr:nth-child(even) td { background: #f8fafc !important; }
-.report-wrap ul, .report-wrap ol { padding-left: 20px !important; margin: 8px 0 !important; }
-.report-wrap li { color: #334155 !important; margin: 4px 0 !important; }
-.report-wrap blockquote {
-    border-left: 3px solid #2563eb !important; padding: 8px 14px !important;
-    margin: 10px 0 !important; background: #eff6ff !important;
-    border-radius: 0 6px 6px 0 !important;
-}
-.report-wrap blockquote * { color: #1e40af !important; font-style: normal !important; }
-/* Long URLs and hashes don't overflow */
-.report-wrap a { word-break: break-all !important; color: #2563eb !important; }
-
-/* ══ SECTION LABEL ══ */
-.sec-label {
-    font-size: 0.65rem; font-weight: 700; letter-spacing: 2px;
-    text-transform: uppercase; color: #94a3b8 !important;
-    border-bottom: 1px solid #f1f5f9; padding-bottom: 7px; margin: 20px 0 12px;
+html, body,
+[data-testid="stAppViewContainer"],
+[data-testid="stAppViewContainer"] > section,
+[data-testid="stAppViewContainer"] > section > div,
+.main, .main > div {
+    background-color: #f7f8fa !important;
+    font-family: 'Inter', -apple-system, sans-serif !important;
+    color: #111827 !important;
 }
 
-/* ══ SCAN STATUS ══ */
-.scan-status {
-    background: #f0f9ff; border: 1px solid #bae6fd; border-radius: 7px;
-    padding: 10px 16px; font-size: 0.8rem; color: #0369a1 !important; margin: 10px 0;
+/* SIDEBAR */
+[data-testid="stSidebar"],
+[data-testid="stSidebar"] > div,
+[data-testid="stSidebar"] > div > div {
+    background-color: #ffffff !important;
+    border-right: 1px solid #e5e7eb !important;
 }
+[data-testid="stSidebar"] * { color: #374151 !important; font-style: normal !important; }
+[data-testid="stSidebar"] strong, [data-testid="stSidebar"] b { color: #111827 !important; font-weight: 600 !important; }
 
-/* ══ ALERTS ══ */
-.alert-ok {
-    background: #f0fdf4; border: 1px solid #86efac; border-radius: 7px;
-    padding: 10px 14px; margin: 6px 0; font-size: 0.83rem; color: #166534 !important;
-}
-.alert-warn {
-    background: #fffbeb; border: 1px solid #fcd34d; border-radius: 7px;
-    padding: 10px 14px; margin: 6px 0; font-size: 0.83rem; color: #92400e !important;
-}
+/* CONTAINER */
+.block-container { padding: 1.4rem 2.2rem 4rem !important; max-width: 1440px !important; }
 
-/* ══ STAT CARDS ══ */
-.stat-row { display: flex; gap: 10px; flex-wrap: wrap; margin: 12px 0; }
-.stat-card {
-    background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px;
-    padding: 12px 16px; flex: 1; min-width: 110px;
-}
-.slbl { font-size: 0.62rem; color: #94a3b8 !important; text-transform: uppercase;
-        letter-spacing: 1px; display: block; margin-bottom: 3px; font-weight: 600; }
-.sval { font-size: 1.1rem; font-weight: 700; color: #0f172a !important;
-        font-family: 'JetBrains Mono', monospace; }
-.sval.g { color: #16a34a !important; }
-.sval.r { color: #dc2626 !important; }
-.sval.a { color: #d97706 !important; }
+/* TYPOGRAPHY */
+h1,h2,h3,h4,h5,h6 { color: #111827 !important; font-weight: 700 !important; font-style: normal !important; }
+p, li { color: #374151 !important; line-height: 1.75 !important; font-style: normal !important; }
+em, i { font-style: normal !important; color: inherit !important; }
+strong, b { font-weight: 600 !important; color: #111827 !important; }
+a { color: #2563eb !important; text-decoration: none !important; }
+a:hover { text-decoration: underline !important; }
 
-/* ══ NEWS ══ */
-.news-item { padding: 9px 0; border-bottom: 1px solid #f1f5f9; }
-.news-title { color: #0f172a !important; font-size: 0.84rem; font-weight: 500; display: block; }
-.news-src   { color: #94a3b8 !important; font-size: 0.71rem; display: block; margin-top: 2px; }
+/* TOP BAR */
+.am-topbar { display:flex; align-items:center; justify-content:space-between; padding:12px 0 16px; border-bottom:1px solid #e5e7eb; margin-bottom:18px; }
+.am-logo { font-size:1.25rem; font-weight:800; letter-spacing:-0.8px; color:#111827 !important; }
+.am-logo .accent { color:#2563eb !important; }
+.am-meta { font-size:0.7rem; color:#9ca3af !important; letter-spacing:0.8px; text-transform:uppercase; font-weight:500; }
 
-/* ══ TABS ══ */
-[data-testid="stTabs"] button {
-    font-size: 0.8rem !important; font-weight: 500 !important;
-    color: #64748b !important; padding: 7px 16px !important;
-}
-[data-testid="stTabs"] button[aria-selected="true"] {
-    font-weight: 700 !important; color: #0f172a !important;
-}
-[data-testid="stTabs"] [role="tablist"] { border-bottom: 2px solid #f1f5f9; }
+/* MACRO STRIP */
+.macro-strip { display:flex; gap:6px; margin-bottom:18px; overflow-x:auto; padding-bottom:2px; scrollbar-width:thin; scrollbar-color:#e5e7eb transparent; }
+.macro-strip::-webkit-scrollbar { height:3px; }
+.macro-strip::-webkit-scrollbar-thumb { background:#d1d5db; border-radius:2px; }
+.mbox { flex:1; min-width:85px; background:#ffffff; border:1px solid #e5e7eb; border-radius:8px; padding:9px 11px; text-align:center; transition:border-color 0.12s; flex-shrink:0; }
+.mbox:hover { border-color:#2563eb; }
+.mlbl { font-size:0.58rem; color:#9ca3af !important; text-transform:uppercase; letter-spacing:1.2px; display:block; margin-bottom:3px; font-weight:600; }
+.mprice { font-size:0.92rem; font-weight:700; color:#111827 !important; font-family:'JetBrains Mono',monospace; display:block; }
+.mchg-up   { color:#16a34a !important; font-size:0.67rem; font-weight:600; }
+.mchg-dn   { color:#dc2626 !important; font-size:0.67rem; font-weight:600; }
+.mchg-flat { color:#9ca3af !important; font-size:0.67rem; }
 
-/* ══ INPUTS — white bg ══ */
-.stTextInput input, .stTextArea textarea, input, textarea {
-    background: #ffffff !important;
-    border: 1.5px solid #e2e8f0 !important;
-    color: #0f172a !important;
-    border-radius: 8px !important;
-    font-size: 0.9rem !important;
-    font-style: normal !important;
-    box-shadow: 0 1px 2px rgba(0,0,0,0.04) !important;
-}
-.stTextInput input:focus, .stTextArea textarea:focus {
-    border-color: #2563eb !important;
-    box-shadow: 0 0 0 3px rgba(37,99,235,0.1) !important;
-}
-[data-testid="stSidebar"] .stTextInput input,
-[data-testid="stSidebar"] .stTextArea textarea {
-    background: #ffffff !important;
-    border-color: #e2e8f0 !important;
-    color: #334155 !important;
-}
+/* STATUS BAR */
+.am-statusbar { display:flex; gap:16px; align-items:center; flex-wrap:wrap; padding:8px 14px; background:#ffffff; border:1px solid #e5e7eb; border-radius:8px; margin-bottom:16px; }
+.am-sitem { font-size:0.71rem; color:#4b5563 !important; display:flex; align-items:center; gap:5px; font-weight:500; white-space:nowrap; }
+.dot { width:6px; height:6px; border-radius:50%; display:inline-block; flex-shrink:0; }
+.dot-green  { background:#16a34a; }
+.dot-red    { background:#dc2626; }
+.dot-blue   { background:#2563eb; }
+.dot-amber  { background:#d97706; }
+.dot-purple { background:#7c3aed; }
+.dot-gray   { background:#9ca3af; }
 
-/* ══ STREAMLIT COMPONENT FIXES ══ */
-[data-testid="stDataFrame"] { border: 1px solid #e2e8f0 !important; border-radius: 8px !important; }
-[data-testid="stMetric"] { background: #f8fafc !important; border: 1px solid #e2e8f0 !important; border-radius: 8px !important; padding: 12px !important; }
-[data-testid="stMetricValue"] { color: #0f172a !important; font-weight: 700 !important; }
-[data-testid="stMetricLabel"] { color: #64748b !important; font-size: 0.8rem !important; }
-[data-testid="stExpander"] { border: 1px solid #e2e8f0 !important; border-radius: 8px !important; }
-div[data-testid="stMarkdownContainer"] * { font-style: normal !important; }
-div[data-testid="stMarkdownContainer"] em { font-style: normal !important; color: #334155 !important; }
-[data-testid="stStatusWidget"] { border-radius: 8px !important; }
-.stSpinner > div { color: #2563eb !important; }
-div.stButton > button {
-    border-radius: 8px !important; font-weight: 600 !important;
-    font-style: normal !important; letter-spacing: 0 !important;
-}
-div.stButton > button[kind="primary"] {
-    background: #2563eb !important; border-color: #2563eb !important; color: #fff !important;
-}
-div.stButton > button[kind="primary"]:hover {
-    background: #1d4ed8 !important; border-color: #1d4ed8 !important;
-}
+/* SEARCH */
+.am-search { background:#ffffff; border:1.5px solid #e5e7eb; border-radius:12px; padding:16px 20px; margin-bottom:20px; box-shadow:0 1px 3px rgba(0,0,0,0.05); }
+.am-search-hint { font-size:0.72rem; color:#6b7280 !important; margin-top:8px; line-height:1.65; }
+.am-search-hint b, .am-search-hint strong { color:#374151 !important; font-weight:600 !important; }
 
-/* ══ MOBILE ══ */
-@media (max-width: 768px) {
-    .block-container { padding: 0.8rem 0.9rem 2rem !important; }
-    .report-wrap { padding: 16px 18px !important; font-size: 0.87rem !important; }
-    .macro-strip { gap: 4px; }
-    .mbox { min-width: 70px; padding: 7px 8px; }
-    .sig-card { padding: 12px 14px; }
-    .topbar { flex-direction: column; align-items: flex-start; gap: 4px; }
-    .stat-row { gap: 6px; }
-    .stat-card { min-width: 90px; }
-    h1 { font-size: 1.4rem !important; }
-    h2 { font-size: 1.1rem !important; }
-    h3 { font-size: 0.95rem !important; }
+/* SIGNAL CARDS */
+.sig-card { background:#ffffff; border:1px solid #e5e7eb; border-radius:10px; padding:15px 18px; margin:7px 0; box-shadow:0 1px 2px rgba(0,0,0,0.04); transition:border-color 0.12s,box-shadow 0.12s; }
+.sig-card:hover { border-color:#2563eb; box-shadow:0 2px 8px rgba(37,99,235,0.1); }
+.sig-card.dark_money { border-left:4px solid #65a30d; }
+.sig-card.pentagon   { border-left:4px solid #2563eb; }
+.sig-card.patent     { border-left:4px solid #7c3aed; }
+.sig-card.insider    { border-left:4px solid #16a34a; }
+.sig-card.macro      { border-left:4px solid #d97706; }
+.sig-card.technical  { border-left:4px solid #0369a1; }
+.sig-top { display:flex; align-items:center; gap:8px; margin-bottom:6px; flex-wrap:wrap; }
+.sig-score { font-size:0.7rem; font-weight:700; padding:2px 7px; border-radius:5px; font-family:'JetBrains Mono',monospace; flex-shrink:0; }
+.score-hi  { background:#dcfce7; color:#14532d !important; }
+.score-med { background:#fef9c3; color:#713f12 !important; }
+.score-lo  { background:#f3f4f6; color:#6b7280 !important; }
+.sig-badge  { font-size:0.61rem; font-weight:700; letter-spacing:1.2px; text-transform:uppercase; color:#9ca3af !important; }
+.sig-ticker { font-size:1rem; font-weight:800; color:#111827 !important; font-family:'JetBrains Mono',monospace; }
+.sig-title  { font-size:0.84rem; color:#1f2937 !important; font-weight:500; margin:4px 0 2px; line-height:1.4; }
+.sig-detail { font-size:0.76rem; color:#6b7280 !important; margin:2px 0; line-height:1.4; }
+.sig-supply { font-size:0.73rem; color:#9ca3af !important; margin-top:5px; }
+.sig-supply .supply-tickers { color:#2563eb !important; font-weight:600; }
+.sig-ts     { font-size:0.64rem; color:#d1d5db !important; margin-top:6px; }
+
+/* SECTION LABEL */
+.am-label { font-size:0.63rem; font-weight:700; letter-spacing:1.8px; text-transform:uppercase; color:#9ca3af !important; border-bottom:1px solid #e5e7eb; padding-bottom:6px; margin:18px 0 12px; display:block; }
+
+/* REPORT — no overflow, no italic */
+.am-report { background:#ffffff; border:1px solid #e5e7eb; border-radius:10px; padding:24px 28px; margin:14px 0; box-shadow:0 1px 3px rgba(0,0,0,0.04); overflow:hidden; width:100%; max-width:100%; box-sizing:border-box; }
+.am-report.c-blue   { border-left:4px solid #2563eb; }
+.am-report.c-green  { border-left:4px solid #16a34a; }
+.am-report.c-amber  { border-left:4px solid #d97706; }
+.am-report.c-red    { border-left:4px solid #dc2626; }
+.am-report.c-purple { border-left:4px solid #7c3aed; }
+.am-report.c-lime   { border-left:4px solid #65a30d; }
+.am-report.c-teal   { border-left:4px solid #0d9488; }
+.am-report.c-cyan   { border-left:4px solid #0369a1; }
+.am-report.c-orange { border-left:4px solid #ea580c; }
+.am-report.c-rose   { border-left:4px solid #e11d48; }
+.am-report.c-pink   { border-left:4px solid #db2777; }
+
+/* ALERTS */
+.am-alert-ok   { background:#f0fdf4; border:1px solid #bbf7d0; border-radius:7px; padding:10px 14px; margin:8px 0; font-size:0.82rem; color:#15803d !important; }
+.am-alert-warn { background:#fffbeb; border:1px solid #fde68a; border-radius:7px; padding:10px 14px; margin:8px 0; font-size:0.82rem; color:#92400e !important; }
+.am-info       { background:#eff6ff; border:1px solid #bfdbfe; border-radius:7px; padding:10px 14px; margin:8px 0; font-size:0.82rem; color:#1d4ed8 !important; }
+
+/* STAT CARDS */
+.am-stat-row { display:flex; gap:10px; flex-wrap:wrap; margin:12px 0; }
+.am-stat { flex:1; min-width:100px; background:#f9fafb; border:1px solid #e5e7eb; border-radius:8px; padding:11px 14px; }
+.am-stat-label { font-size:0.61rem; color:#9ca3af !important; text-transform:uppercase; letter-spacing:0.8px; display:block; margin-bottom:4px; font-weight:600; }
+.am-stat-val { font-size:1.05rem; font-weight:700; color:#111827 !important; font-family:'JetBrains Mono',monospace; }
+.am-stat-val.g { color:#16a34a !important; }
+.am-stat-val.r { color:#dc2626 !important; }
+.am-stat-val.a { color:#d97706 !important; }
+
+/* NEWS */
+.am-news { padding:8px 0; border-bottom:1px solid #f3f4f6; }
+.am-news-title { color:#1f2937 !important; font-size:0.83rem; font-weight:500; display:block; line-height:1.4; }
+.am-news-src   { color:#9ca3af !important; font-size:0.7rem; display:block; margin-top:2px; }
+
+/* TABS */
+[data-testid="stTabs"] [role="tablist"] { gap:0; border-bottom:2px solid #e5e7eb !important; background:transparent !important; }
+[data-testid="stTabs"] button { font-size:0.8rem !important; font-weight:500 !important; color:#6b7280 !important; padding:8px 18px !important; border-bottom:2px solid transparent !important; border-radius:0 !important; background:transparent !important; margin-bottom:-2px !important; }
+[data-testid="stTabs"] button:hover { color:#374151 !important; }
+[data-testid="stTabs"] button[aria-selected="true"] { color:#111827 !important; font-weight:700 !important; border-bottom:2px solid #2563eb !important; }
+
+/* INPUTS */
+.stTextInput > div > div > input,
+.stTextArea > div > div > textarea {
+    background:#ffffff !important; border:1.5px solid #d1d5db !important; border-radius:8px !important;
+    color:#111827 !important; font-size:0.9rem !important; box-shadow:none !important;
+}
+.stTextInput > div > div > input:focus,
+.stTextArea > div > div > textarea:focus {
+    border-color:#2563eb !important; box-shadow:0 0 0 3px rgba(37,99,235,0.1) !important;
+}
+[data-testid="stSelectbox"] [data-baseweb="select"] > div { background:#ffffff !important; border:1.5px solid #d1d5db !important; border-radius:8px !important; }
+
+/* BUTTONS */
+div.stButton > button { border-radius:8px !important; font-weight:600 !important; font-size:0.85rem !important; letter-spacing:0 !important; padding:6px 16px !important; }
+div.stButton > button[kind="primary"] { background:#2563eb !important; border:1px solid #2563eb !important; color:#ffffff !important; }
+div.stButton > button[kind="primary"]:hover { background:#1d4ed8 !important; border-color:#1d4ed8 !important; }
+div.stButton > button[kind="secondary"] { background:#ffffff !important; border:1px solid #d1d5db !important; color:#374151 !important; }
+
+/* STREAMLIT WIDGETS */
+[data-testid="stDataFrame"] { border:1px solid #e5e7eb !important; border-radius:8px !important; overflow:hidden !important; }
+[data-testid="metric-container"] { background:#f9fafb !important; border:1px solid #e5e7eb !important; border-radius:8px !important; padding:12px !important; }
+[data-testid="stMetricValue"] { color:#111827 !important; font-weight:700 !important; }
+[data-testid="stMetricLabel"] { color:#6b7280 !important; font-size:0.8rem !important; }
+details[data-testid="stExpander"] { border:1px solid #e5e7eb !important; border-radius:8px !important; background:#ffffff !important; }
+[data-testid="stStatusWidget"] { border-radius:8px !important; }
+[data-testid="stProgress"] > div > div { background:#2563eb !important; }
+
+/* MARKDOWN CONTAINER — kill italic, fix overflow, fix tables */
+div[data-testid="stMarkdownContainer"] { overflow-x:auto !important; max-width:100% !important; }
+div[data-testid="stMarkdownContainer"] * { font-style:normal !important; }
+div[data-testid="stMarkdownContainer"] em { font-style:normal !important; color:#374151 !important; font-weight:500; }
+div[data-testid="stMarkdownContainer"] p  { color:#374151 !important; line-height:1.75 !important; margin:6px 0 !important; }
+div[data-testid="stMarkdownContainer"] li { color:#374151 !important; margin:3px 0 !important; line-height:1.65 !important; }
+div[data-testid="stMarkdownContainer"] strong,
+div[data-testid="stMarkdownContainer"] b { color:#111827 !important; font-weight:700 !important; }
+div[data-testid="stMarkdownContainer"] h1,
+div[data-testid="stMarkdownContainer"] h2,
+div[data-testid="stMarkdownContainer"] h3,
+div[data-testid="stMarkdownContainer"] h4 { color:#111827 !important; font-weight:700 !important; margin-top:16px !important; margin-bottom:6px !important; }
+div[data-testid="stMarkdownContainer"] h2 { border-bottom:1px solid #f3f4f6 !important; padding-bottom:4px !important; }
+div[data-testid="stMarkdownContainer"] h3 { color:#1e40af !important; font-size:0.97rem !important; }
+div[data-testid="stMarkdownContainer"] code { background:#f3f4f6 !important; color:#1f2937 !important; padding:1px 5px !important; border-radius:4px !important; font-size:0.84em !important; word-break:break-all !important; font-family:'JetBrains Mono',monospace !important; }
+div[data-testid="stMarkdownContainer"] pre { overflow-x:auto !important; white-space:pre-wrap !important; word-break:break-word !important; background:#f8fafc !important; border:1px solid #e5e7eb !important; border-radius:7px !important; padding:12px 16px !important; font-size:0.85rem !important; max-width:100% !important; }
+div[data-testid="stMarkdownContainer"] table { width:100% !important; border-collapse:collapse !important; font-size:0.87rem !important; margin:10px 0 !important; display:block !important; overflow-x:auto !important; max-width:100% !important; }
+div[data-testid="stMarkdownContainer"] th { background:#f3f4f6 !important; color:#111827 !important; font-weight:600 !important; padding:8px 12px !important; text-align:left !important; border:1px solid #e5e7eb !important; white-space:nowrap !important; }
+div[data-testid="stMarkdownContainer"] td { padding:7px 12px !important; border:1px solid #e5e7eb !important; color:#374151 !important; vertical-align:top !important; }
+div[data-testid="stMarkdownContainer"] tr:nth-child(even) td { background:#f9fafb !important; }
+div[data-testid="stMarkdownContainer"] blockquote { border-left:3px solid #2563eb !important; padding:8px 14px !important; margin:10px 0 !important; background:#eff6ff !important; border-radius:0 6px 6px 0 !important; }
+div[data-testid="stMarkdownContainer"] ul, div[data-testid="stMarkdownContainer"] ol { padding-left:20px !important; margin:8px 0 !important; }
+div[data-testid="stMarkdownContainer"] hr { border:none !important; border-top:1px solid #e5e7eb !important; margin:14px 0 !important; }
+
+/* DIVIDER */
+hr { border:none !important; border-top:1px solid #e5e7eb !important; }
+[data-testid="stDivider"] { border-color:#e5e7eb !important; }
+
+/* SCROLLBARS */
+::-webkit-scrollbar { width:5px; height:5px; }
+::-webkit-scrollbar-track { background:transparent; }
+::-webkit-scrollbar-thumb { background:#d1d5db; border-radius:3px; }
+::-webkit-scrollbar-thumb:hover { background:#9ca3af; }
+
+/* MOBILE */
+@media (max-width:768px) {
+    .block-container { padding:0.8rem 1rem 2.5rem !important; }
+    .mbox { min-width:72px; padding:7px 8px; }
+    .sig-card { padding:12px 14px; }
+    .am-report { padding:16px 18px !important; }
+    .am-topbar { flex-direction:column; align-items:flex-start; gap:3px; }
+    .am-statusbar { gap:10px; padding:7px 12px; }
+    .macro-strip { gap:4px; }
+    h1 { font-size:1.4rem !important; }
+    h2 { font-size:1.1rem !important; }
 }
 </style>
 """, unsafe_allow_html=True)
@@ -1160,57 +1083,42 @@ TYPE_LABELS = {
     "insider":"👤 INSIDER","macro":"🌍 MACRO","technical":"📈 TECHNICAL"
 }
 TYPE_COLORS = {
-    "dark_money":"#84cc16","pentagon":"#3b82f6","patent":"#a78bfa",
-    "insider":"#22c55e","macro":"#f59e0b","technical":"#06b6d4"
+    "dark_money":"#65a30d","pentagon":"#2563eb","patent":"#7c3aed",
+    "insider":"#16a34a","macro":"#d97706","technical":"#0369a1"
 }
 
 def render_signal_card(sig, idx):
-    sc = _score_to_class(sig["score"])
-    t  = sig["type"]
-    color = TYPE_COLORS.get(t,"#3b82f6")
-    label = TYPE_LABELS.get(t,t.upper())
+    t     = sig["type"]
+    label = TYPE_LABELS.get(t, t.upper())
+    score = sig["score"]
+    sc_cls = "score-hi" if score >= 7.5 else "score-med" if score >= 5 else "score-lo"
     st.markdown(f"""
 <div class="sig-card {t}">
   <div class="sig-top">
-    <span class="sig-score {sc}">◈ {sig['score']}</span>
-    <span class="sig-type">{label}</span>
+    <span class="sig-score {sc_cls}">{score}</span>
+    <span class="sig-badge">{label}</span>
     <span class="sig-ticker">{sig['ticker']}</span>
   </div>
   <div class="sig-title">{sig['title']}</div>
   <div class="sig-detail">{sig['detail']}</div>
-  <div class="sig-supply">↳ <span>{sig['supply_hint']}</span></div>
-  <div class="sig-meta">{sig.get('ts','')[:16].replace('T',' ')} UTC</div>
+  <div class="sig-supply">↳ <span class="supply-tickers">{sig['supply_hint']}</span></div>
+  <div class="sig-ts">{sig.get('ts','')[:16].replace('T',' ')} UTC</div>
 </div>""", unsafe_allow_html=True)
-    return st.button(f"→ Deep Dive", key=f"dd_{sig['id']}_{idx}", use_container_width=False)
+    return st.button("→ Deep Dive", key=f"dd_{sig['id']}_{idx}", use_container_width=False)
 
 def show_result(text, color="blue"):
-    """
-    Render AI report inside a properly styled container.
-    Uses a border-coloured wrapper div then st.markdown for Streamlit
-    to process markdown (headers, bold, lists) correctly.
-    The wrapper provides overflow protection, no-italic, and white bg.
-    """
-    # Open the container
-    st.markdown(f'''<div class="report-wrap {color}" style="
-        background:#ffffff;
-        border:1px solid #e2e8f0;
-        border-left:4px solid {
-            {"blue":"#2563eb","green":"#16a34a","amber":"#d97706","red":"#dc2626",
-             "purple":"#7c3aed","lime":"#65a30d","teal":"#0d9488","cyan":"#0284c7",
-             "orange":"#ea580c","rose":"#e11d48","pink":"#db2777"}.get(color,"#2563eb")
-        };
-        border-radius:10px;
-        padding:24px 28px;
-        margin:14px 0;
-        box-shadow:0 1px 4px rgba(0,0,0,0.05);
-        overflow:hidden;
-        max-width:100%;
-        box-sizing:border-box;
-    "></div>''', unsafe_allow_html=True)
-    # Render content as native Streamlit markdown — headers, bold, lists work
+    """Render AI report with colour-coded left border. Uses am-report CSS class."""
+    COLORS = {"blue":"#2563eb","green":"#16a34a","amber":"#d97706","red":"#dc2626",
+              "purple":"#7c3aed","lime":"#65a30d","teal":"#0d9488","cyan":"#0369a1",
+              "orange":"#ea580c","rose":"#e11d48","pink":"#db2777"}
+    accent = COLORS.get(color, "#2563eb")
+    # Render a thin top-border div as a visual marker, then the markdown content
+    st.markdown(
+        f'<div class="am-report c-{color}" style="border-left:4px solid {accent}"></div>',
+        unsafe_allow_html=True
+    )
+    # st.markdown renders all markdown natively — headers, bold, tables, lists
     st.markdown(text)
-    # Hard reset after to prevent style bleed
-    st.markdown('<div style="clear:both"></div>', unsafe_allow_html=True)
 
 def dl_tg(text, prefix):
     c1,c2 = st.columns(2)
@@ -1254,16 +1162,16 @@ n_sigs  = len(feed)
 n_high  = sum(1 for s in feed if s["score"]>=7.5)
 
 st.markdown(f"""
-<div class="topbar">
-  <div class="logo">◈ Alpha<span>Machine</span> <span style="font-size:0.7rem;font-weight:400;color:#64748b;letter-spacing:0;"> v6</span></div>
-  <div class="topbar-meta" style="color:#94a3b8">{datetime.now().strftime("%d %b %Y · %H:%M UTC")} · {n_sigs} signals · {n_high} high-conviction</div>
+<div class="am-topbar">
+  <div class="am-logo">◈ Alpha<span class="accent">Machine</span> <span style="font-size:0.68rem;font-weight:400;color:#9ca3af"> v6</span></div>
+  <div class="am-meta">{datetime.now().strftime("%d %b %Y · %H:%M UTC")} &nbsp;·&nbsp; {n_sigs} signals &nbsp;·&nbsp; {n_high} high-conviction</div>
 </div>""", unsafe_allow_html=True)
 
 # Macro strip
 strip_html = ""
 for lbl,(p,c) in macro_data.items():
     if p is not None:
-        cls = "up" if (c or 0)>=0 else "dn"
+        cls = "mchg-up" if (c or 0)>=0 else "mchg-dn"
         fmt = f"{p:,.0f}" if p>500 else f"{p:.2f}"
         sgn = "+" if (c or 0)>=0 else ""
         strip_html += f'<div class="mbox"><span class="mlbl">{lbl}</span><span class="mprice">{fmt}</span><span class="{cls}">{sgn}{c:.2f}%</span></div>'
@@ -1283,19 +1191,19 @@ if last_ts and last_ts!="Never" and scan_interval!="Manual only":
 
 pent_dot = "dot-blue"; pat_dot = "dot-purple" if True else "dot-red"
 st.markdown(f"""
-<div class="statusbar">
-  <span class="sitem"><span class="{'dot-green' if gemini_key else 'dot-red'}"></span>AI Engine</span>
-  <span class="sitem"><span class="dot-blue"></span>Pentagon: USASpending.gov</span>
-  <span class="sitem"><span class="dot-purple"></span>Patents: USPTO</span>
-  <span class="sitem"><span class="dot-green"></span>Insider: EDGAR Form 4</span>
-  <span class="sitem"><span class="dot-amber"></span>Dark Money: Options Chain</span>
-  <span class="sitem" style="margin-left:auto">Last scan: {last_str} · Next: {next_scan_str}</span>
+<div class="am-statusbar">
+  <span class="am-sitem"><span class="dot {'dot-green' if gemini_key else 'dot-red'}"></span>AI Engine</span>
+  <span class="am-sitem"><span class="dot dot-blue"></span>Pentagon</span>
+  <span class="am-sitem"><span class="dot dot-purple"></span>USPTO Patents</span>
+  <span class="am-sitem"><span class="dot dot-green"></span>EDGAR Insider</span>
+  <span class="am-sitem"><span class="dot dot-amber"></span>Options Flow</span>
+  <span class="am-sitem" style="margin-left:auto;color:#9ca3af;font-size:0.68rem">Last: {last_str} &nbsp;·&nbsp; Next: {next_scan_str}</span>
 </div>""", unsafe_allow_html=True)
 
 # ══════════════════════════════════════════════════════════════════════════════
 #  UNIVERSAL SEARCH BAR
 # ══════════════════════════════════════════════════════════════════════════════
-st.markdown('<div class="search-wrap">', unsafe_allow_html=True)
+st.markdown('<div class="am-search">', unsafe_allow_html=True)
 sc1, sc2 = st.columns([5,1])
 with sc1:
     search_input = st.text_input("",
@@ -1303,11 +1211,11 @@ with sc1:
         label_visibility="collapsed", key="ti_universal_search")
 with sc2:
     search_btn = st.button("Search →", type="primary", key="btn_universal_search", use_container_width=True)
-st.markdown("""<div class="search-hint" style="font-size:0.73rem;color:#64748b;margin-top:10px;line-height:1.65">
-  <b>Ticker:</b> NVDA → full deep dive · DCF · supply chain · insider · options<br>
-  <b>Theme:</b> Solid State Batteries → full sector map + supply chain + asymmetric bets<br>
-  <b>Scenario:</b> Taiwan conflict → geo trade with winners, losers, hedges<br>
-  <b>Person:</b> Soros / Burry → 13F analysis + what they're betting on
+st.markdown("""<div class="am-search-hint">
+  <b>Ticker</b>: NVDA → DCF · supply chain · insider · options &nbsp;|&nbsp;
+  <b>Theme</b>: Solid State Batteries → sector map + bets &nbsp;|&nbsp;
+  <b>Scenario</b>: Taiwan conflict → geo trades &nbsp;|&nbsp;
+  <b>Person</b>: Soros/Burry → 13F analysis
 </div>""", unsafe_allow_html=True)
 st.markdown('</div>', unsafe_allow_html=True)
 
@@ -1321,7 +1229,7 @@ if search_btn and search_input.strip():
 
 if st.session_state.get("search_result"):
     q = st.session_state.get("search_query","")
-    st.markdown(f'<div class="sec-label" style="font-size:0.65rem;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:#94a3b8;border-bottom:1px solid #f1f5f9;padding-bottom:7px;margin:20px 0 12px">Intelligence Report — {q}</div>', unsafe_allow_html=True)
+    st.markdown(f'<div class="am-label">Intelligence Report — {q}</div>', unsafe_allow_html=True)
     show_result(st.session_state["search_result"], "blue")
     dl_tg(st.session_state["search_result"], f"search_{q[:20].replace(' ','_')}")
     if st.button("✕ Clear search", key="btn_clear_search"):
@@ -1349,7 +1257,7 @@ with tab_feed:
         min_score_f  = st.slider("Min score", 0.0, 10.0, 5.0, 0.5, key="sl_min_score_feed")
     with fc4:
         if should_auto_scan() and gemini_key and not feed:
-            st.markdown('<div class="scan-status" style="background:#f0f9ff;border:1px solid #bae6fd;border-radius:7px;padding:10px 16px;font-size:0.8rem;color:#0369a1;margin:10px 0">🔄 Auto-scanning on first load...</div>', unsafe_allow_html=True)
+            st.markdown('<div class="am-info">🔄 Auto-scanning on first load...</div>', unsafe_allow_html=True)
 
     # Auto-scan trigger
     if should_auto_scan() and gemini_key and (run_scan_btn or not feed):
@@ -1393,7 +1301,7 @@ with tab_feed:
         by_type = {}
         for s in filtered:
             by_type[s["type"]] = by_type.get(s["type"],0) + 1
-        summary_html = "".join([f'<span style="font-size:0.75rem;color:{TYPE_COLORS.get(t,"#4a5568")};margin-right:12px">{TYPE_LABELS.get(t,t)}: {n}</span>'
+        summary_html = "".join([f'<span style="font-size:0.72rem;font-weight:600;color:{TYPE_COLORS.get(t,"#6b7280")};margin-right:14px">{TYPE_LABELS.get(t,t)}: {n}</span>'
                                  for t,n in sorted(by_type.items(),key=lambda x:-x[1])])
         st.markdown(f'<div style="margin-bottom:12px">{summary_html}</div>', unsafe_allow_html=True)
 
@@ -1409,7 +1317,7 @@ with tab_feed:
         # Deep dive panel
         if st.session_state.get("deep_dive_sig"):
             sig = st.session_state["deep_dive_sig"]
-            st.markdown(f'<div class="sec-label" style="font-size:0.65rem;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:#94a3b8;border-bottom:1px solid #f1f5f9;padding-bottom:7px;margin:20px 0 12px">Deep Dive — {sig["ticker"]} · {TYPE_LABELS.get(sig["type"],"")}</div>',
+            st.markdown(f'<div class="am-label">Deep Dive — {sig["ticker"]} · {TYPE_LABELS.get(sig["type"],"")}</div>',
                         unsafe_allow_html=True)
             if key_check():
                 with st.spinner(f"Running deep dive on {sig['ticker']}..."):
@@ -1482,7 +1390,7 @@ with tab_adv:
     # ── DCF ────────────────────────────────────────────────────────────────────
     with at_dcf:
         st.markdown("**Quantitative DCF** — numpy Bear/Base/Bull · FMP real financials")
-        if fmp_key: st.markdown('<div class="alert-ok" style="background:#f0fdf4;border:1px solid #86efac;border-radius:7px;padding:10px 14px;margin:6px 0;font-size:0.83rem;color:#166534">✓ FMP connected — real financial data</div>', unsafe_allow_html=True)
+        if fmp_key: st.markdown('<div class="am-alert-ok">✓ FMP connected — real financial data</div>', unsafe_allow_html=True)
         c1,c2=st.columns([3,1])
         with c1: dcf_t=st.text_input("Ticker",placeholder="NVDA · PLTR · AXTI",label_visibility="collapsed",key="ti_dcf")
         with c2: dcf_r=st.button("Run DCF →",type="primary",key="btn_dcf")
@@ -1506,7 +1414,7 @@ with tab_adv:
                     dcf_results=dcf_valuation(rev_latest,max(rev_growth,0.05),max(fcf_margin,0.02),0.10,0.03,shares,net_debt)
                 except: pass
             if dcf_results:
-                st.markdown('<div class="sec-label" style="font-size:0.65rem;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:#94a3b8;border-bottom:1px solid #f1f5f9;padding-bottom:7px;margin:20px 0 12px">DCF — numpy calculated</div>',unsafe_allow_html=True)
+                st.markdown('<div class="am-label">DCF — numpy calculated</div>',unsafe_allow_html=True)
                 cols=st.columns(4)
                 for col,(sc,lbl) in zip(cols,[("Bear","Bear FV"),("Base","Base FV"),("Bull","Bull FV")]):
                     fv=dcf_results[sc]["FV_per_share"]
@@ -1548,7 +1456,7 @@ with tab_adv:
                         if c: pd_data[sym]=c
                     corr=calc_correlation_matrix(pd_data)
                     if not corr.empty:
-                        st.markdown('<div class="sec-label" style="font-size:0.65rem;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:#94a3b8;border-bottom:1px solid #f1f5f9;padding-bottom:7px;margin:20px 0 12px">Correlation Matrix</div>',unsafe_allow_html=True)
+                        st.markdown('<div class="am-label">Correlation Matrix</div>',unsafe_allow_html=True)
                         def _cc(v):
                             if not isinstance(v,(int,float)) or abs(v)==1: return ""
                             if abs(v)>0.85: return "background:#2e0505;color:#fca5a5;font-weight:600"
@@ -1720,7 +1628,7 @@ with tab_adv:
     # ── SEC Filings ────────────────────────────────────────────────────────────
     with at_sec:
         st.markdown("**SEC Filing Scanner** — Form 4 insider · 8-K events · 10-Q red flags")
-        if finnhub_key: st.markdown('<div class="alert-ok" style="background:#f0fdf4;border:1px solid #86efac;border-radius:7px;padding:10px 14px;margin:6px 0;font-size:0.83rem;color:#166534">✓ Finnhub — real insider data</div>',unsafe_allow_html=True)
+        if finnhub_key: st.markdown('<div class="am-alert-ok">✓ Finnhub — real insider data</div>',unsafe_allow_html=True)
         c1,c2=st.columns([3,1])
         with c1: sec_t=st.text_input("Ticker",placeholder="PLTR · NVDA · RKLB",label_visibility="collapsed",key="ti_sec")
         with c2: sec_r=st.button("Scan Filings →",type="primary",key="btn_sec")
@@ -1824,7 +1732,7 @@ with tab_adv:
                     if fired: alerts.append({"ticker":sym,"price":p,"signals":fired})
                 if alerts:
                     for a in alerts:
-                        st.markdown(f'<div class="alert-ok" style="background:#f0fdf4;border:1px solid #86efac;border-radius:7px;padding:10px 14px;margin:6px 0;font-size:0.83rem;color:#166534"><strong>{a["ticker"]}</strong> @ ${a["price"]} — {", ".join(a["signals"])}</div>',unsafe_allow_html=True)
+                        st.markdown(f'<div class="am-alert-ok"><strong>{a["ticker"]}</strong> @ ${a["price"]} — {", ".join(a["signals"])}</div>',unsafe_allow_html=True)
                     alert_str="\n".join([f"• {a['ticker']} @ ${a['price']}: {', '.join(a['signals'])}" for a in alerts])
                     with st.spinner("AI triage..."):
                         ai=call_gemini(SP["cio"],f"ALERTS:\n{alert_str}\n\nFor each: actionable NOW or false positive? Urgency: ACT/WATCH/LOW. TOP PRIORITY: [ticker] — [one sentence]",gemini_key)
@@ -1833,7 +1741,7 @@ with tab_adv:
                         send_telegram(f"◈ WATCHDOG\n{datetime.now():%Y-%m-%d %H:%M}\n\n{alert_str}\n\n{ai[:800]}",tg_token,tg_chat)
                         st.success("Sent to Telegram")
                     dl_tg(ai,"watchdog")
-                else: st.markdown('<div class="alert-ok" style="background:#f0fdf4;border:1px solid #86efac;border-radius:7px;padding:10px 14px;margin:6px 0;font-size:0.83rem;color:#166534">✓ No triggers fired</div>',unsafe_allow_html=True)
+                else: st.markdown('<div class="am-alert-ok">✓ No triggers fired</div>',unsafe_allow_html=True)
 
     # ── Backtest ───────────────────────────────────────────────────────────────
     with at_bt:
