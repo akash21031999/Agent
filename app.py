@@ -22,132 +22,294 @@ st.markdown("""
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
 
-html,body,[data-testid="stAppViewContainer"]{background:#07080f;font-family:'Inter',sans-serif;color:#e1e4e8;}
-[data-testid="stSidebar"]{background:#09091a;border-right:1px solid #181830;}
-[data-testid="stSidebar"] *{color:#8892a4 !important;}
+html,body,[data-testid="stAppViewContainer"]{background:#ffffff;font-family:'Inter',sans-serif;color:#0f172a;}
+[data-testid="stSidebar"]{background:#f8fafc;border-right:1px solid #e2e8f0;}
+[data-testid="stSidebar"] *{color:#475569 !important;}
 .block-container{padding:1.2rem 1.8rem 3rem;max-width:1500px;}
-h1,h2,h3,h4{color:#f0f2f5;font-weight:600;letter-spacing:-0.3px;}
-p,li{color:#9aa3b2;line-height:1.75;}
+h1,h2,h3,h4{color:#0f172a;font-weight:600;letter-spacing:-0.3px;}
+p,li{color:#475569;line-height:1.75;}
 
-/* ── Top bar ── */
-.topbar{display:flex;align-items:center;justify-content:space-between;
-        padding:10px 0 16px;border-bottom:1px solid #181830;margin-bottom:18px;}
-.logo{font-size:1.25rem;font-weight:700;letter-spacing:-0.8px;color:#f0f2f5;}
-.logo span{color:#3b82f6;}
-.topbar-meta{font-size:0.7rem;color:#374151;letter-spacing:1px;text-transform:uppercase;}
+/* ══ TOP BAR ══ */
+.topbar {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 14px 0 18px; border-bottom: 2px solid #f1f5f9; margin-bottom: 20px;
+}
+.logo { font-size: 1.3rem; font-weight: 800; letter-spacing: -1px; color: #0f172a !important; }
+.logo span { color: #2563eb !important; }
+.topbar-meta { font-size: 0.7rem; color: #94a3b8 !important; letter-spacing: 1px; text-transform: uppercase; }
 
-/* ── Macro strip ── */
-.macro-strip{display:flex;gap:1px;margin-bottom:18px;overflow-x:auto;}
-.mbox{flex:1;min-width:80px;background:#0d0e1a;border:1px solid #181830;
-      border-radius:6px;padding:8px 10px;text-align:center;}
-.mlbl{font-size:0.6rem;color:#374151;text-transform:uppercase;letter-spacing:1.5px;display:block;margin-bottom:2px;}
-.mprice{font-size:0.95rem;font-weight:600;color:#f0f2f5;font-family:'JetBrains Mono',monospace;display:block;}
-.up{color:#22c55e;font-size:0.68rem;font-weight:500;}
-.dn{color:#ef4444;font-size:0.68rem;font-weight:500;}
-.flat{color:#374151;font-size:0.68rem;}
+/* ══ MACRO STRIP ══ */
+.macro-strip {
+    display: flex; gap: 6px; margin-bottom: 20px;
+    overflow-x: auto; padding-bottom: 2px;
+    scrollbar-width: thin; scrollbar-color: #e2e8f0 transparent;
+}
+.macro-strip::-webkit-scrollbar { height: 3px; }
+.macro-strip::-webkit-scrollbar-thumb { background: #e2e8f0; border-radius: 3px; }
+.mbox {
+    flex: 1; min-width: 90px; background: #f8fafc;
+    border: 1px solid #e2e8f0; border-radius: 8px;
+    padding: 10px 12px; text-align: center;
+    transition: border-color 0.15s, box-shadow 0.15s;
+}
+.mbox:hover { border-color: #2563eb; box-shadow: 0 1px 6px rgba(37,99,235,0.08); }
+.mlbl { font-size: 0.6rem; color: #94a3b8 !important; text-transform: uppercase;
+        letter-spacing: 1.5px; display: block; margin-bottom: 3px; font-weight: 600; }
+.mprice { font-size: 0.98rem; font-weight: 700; color: #0f172a !important;
+          font-family: 'JetBrains Mono', monospace; display: block; }
+.up   { color: #16a34a !important; font-size: 0.7rem; font-weight: 600; }
+.dn   { color: #dc2626 !important; font-size: 0.7rem; font-weight: 600; }
+.flat { color: #94a3b8 !important; font-size: 0.7rem; }
 
-/* ── Universal search ── */
-.search-wrap{background:#0d0e1a;border:1px solid #1e2340;border-radius:10px;
-             padding:16px 20px;margin-bottom:20px;}
-.search-hint{font-size:0.72rem;color:#374151;margin-top:8px;line-height:1.6;}
+/* ══ SEARCH ══ */
+.search-wrap {
+    background: #f8fafc; border: 1.5px solid #e2e8f0;
+    border-radius: 12px; padding: 18px 22px; margin-bottom: 22px;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.04);
+}
+.search-hint { font-size: 0.73rem; color: #64748b !important; margin-top: 10px; line-height: 1.65; }
 
-/* ── Signal feed card ── */
-.sig-card{background:#0d0e1a;border:1px solid #181830;border-radius:8px;
-          padding:14px 18px;margin:6px 0;cursor:pointer;
-          transition:border-color 0.15s,background 0.15s;}
-.sig-card:hover{border-color:#3b82f6;background:#0f1020;}
-.sig-card.dark_money{border-left:3px solid #84cc16;}
-.sig-card.pentagon{border-left:3px solid #3b82f6;}
-.sig-card.patent{border-left:3px solid #a78bfa;}
-.sig-card.insider{border-left:3px solid #22c55e;}
-.sig-card.macro{border-left:3px solid #f59e0b;}
-.sig-card.technical{border-left:3px solid #06b6d4;}
-.sig-top{display:flex;align-items:center;gap:10px;margin-bottom:6px;}
-.sig-score{font-size:0.72rem;font-weight:700;padding:2px 7px;border-radius:4px;font-family:'JetBrains Mono',monospace;}
-.score-high{background:#052e1c;color:#22c55e;}
-.score-med{background:#1c1505;color:#f59e0b;}
-.score-low{background:#0a0a1a;color:#4a5568;}
-.sig-type{font-size:0.65rem;font-weight:600;letter-spacing:1.5px;text-transform:uppercase;color:#374151;}
-.sig-ticker{font-size:1rem;font-weight:700;color:#f0f2f5;font-family:'JetBrains Mono',monospace;}
-.sig-title{font-size:0.85rem;color:#9aa3b2;margin:3px 0;}
-.sig-supply{font-size:0.75rem;color:#374151;margin-top:4px;}
-.sig-supply span{color:#3b82f6;font-weight:500;}
-.sig-meta{font-size:0.68rem;color:#374151;margin-top:6px;}
+/* ══ STATUS BAR ══ */
+.statusbar {
+    display: flex; gap: 18px; align-items: center; flex-wrap: wrap;
+    padding: 9px 16px; background: #f8fafc;
+    border: 1px solid #e2e8f0; border-radius: 8px;
+    margin-bottom: 18px;
+}
+.sitem { font-size: 0.72rem; color: #475569 !important; display: flex; align-items: center; gap: 6px; }
+.dot-green { width:7px;height:7px;border-radius:50%;background:#16a34a;display:inline-block;flex-shrink:0; }
+.dot-amber { width:7px;height:7px;border-radius:50%;background:#d97706;display:inline-block;flex-shrink:0; }
+.dot-red   { width:7px;height:7px;border-radius:50%;background:#dc2626;display:inline-block;flex-shrink:0; }
+.dot-blue  { width:7px;height:7px;border-radius:50%;background:#2563eb;display:inline-block;flex-shrink:0; }
+.dot-purple{ width:7px;height:7px;border-radius:50%;background:#7c3aed;display:inline-block;flex-shrink:0; }
 
-/* ── Status bar ── */
-.statusbar{display:flex;gap:16px;align-items:center;
-           padding:8px 14px;background:#0a0b14;border:1px solid #181830;
-           border-radius:6px;margin-bottom:16px;flex-wrap:wrap;}
-.sitem{font-size:0.72rem;color:#374151;display:flex;align-items:center;gap:5px;}
-.dot-green{width:6px;height:6px;border-radius:50%;background:#22c55e;display:inline-block;}
-.dot-amber{width:6px;height:6px;border-radius:50%;background:#f59e0b;display:inline-block;}
-.dot-red{width:6px;height:6px;border-radius:50%;background:#ef4444;display:inline-block;}
-.dot-blue{width:6px;height:6px;border-radius:50%;background:#3b82f6;display:inline-block;}
+/* ══ SIGNAL FEED CARDS ══ */
+.sig-card {
+    background: #ffffff; border: 1px solid #e2e8f0;
+    border-radius: 10px; padding: 16px 20px; margin: 8px 0;
+    transition: border-color 0.15s, box-shadow 0.15s;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+}
+.sig-card:hover { border-color: #2563eb; box-shadow: 0 4px 12px rgba(37,99,235,0.1); }
+.sig-card.dark_money { border-left: 4px solid #65a30d; }
+.sig-card.pentagon   { border-left: 4px solid #2563eb; }
+.sig-card.patent     { border-left: 4px solid #7c3aed; }
+.sig-card.insider    { border-left: 4px solid #16a34a; }
+.sig-card.macro      { border-left: 4px solid #d97706; }
+.sig-card.technical  { border-left: 4px solid #0284c7; }
+.sig-top { display:flex; align-items:center; gap:10px; margin-bottom:7px; flex-wrap:wrap; }
+.sig-score {
+    font-size: 0.72rem; font-weight: 700; padding: 2px 8px; border-radius: 5px;
+    font-family: 'JetBrains Mono', monospace; flex-shrink: 0;
+}
+.score-high { background: #dcfce7; color: #166534 !important; }
+.score-med  { background: #fef3c7; color: #92400e !important; }
+.score-low  { background: #f1f5f9; color: #64748b !important; }
+.sig-type   { font-size: 0.63rem; font-weight: 700; letter-spacing: 1.5px; text-transform: uppercase; color: #94a3b8 !important; }
+.sig-ticker { font-size: 1.05rem; font-weight: 800; color: #0f172a !important; font-family: 'JetBrains Mono', monospace; }
+.sig-title  { font-size: 0.86rem; color: #334155 !important; margin: 4px 0 2px; font-weight: 500; }
+.sig-detail { font-size: 0.78rem; color: #64748b !important; margin: 2px 0; }
+.sig-supply { font-size: 0.75rem; color: #94a3b8 !important; margin-top: 5px; }
+.sig-supply span { color: #2563eb !important; font-weight: 600; }
+.sig-meta   { font-size: 0.67rem; color: #94a3b8 !important; margin-top: 7px; }
 
-/* ── Report ── */
-.report{background:#0d0e1a;border:1px solid #181830;border-radius:8px;
-        padding:24px 28px;margin:12px 0;line-height:1.85;
-        word-wrap:break-word;overflow-wrap:break-word;
-        font-size:0.92rem;color:#c9d1df;}
-.report.blue{border-left:3px solid #3b82f6;}
-.report.green{border-left:3px solid #22c55e;}
-.report.amber{border-left:3px solid #f59e0b;}
-.report.red{border-left:3px solid #ef4444;}
-.report.purple{border-left:3px solid #a78bfa;}
-.report.lime{border-left:3px solid #84cc16;}
-.report.teal{border-left:3px solid #14b8a6;}
-.report.cyan{border-left:3px solid #06b6d4;}
-.report.orange{border-left:3px solid #f97316;}
-.report.rose{border-left:3px solid #f43f5e;}
-.report.pink{border-left:3px solid #ec4899;}
+/* ══ REPORT — THE KEY FIX FOR OVERFLOW + ITALIC ══ */
+.report-wrap {
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
+    border-radius: 10px;
+    padding: 26px 30px;
+    margin: 14px 0;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.05);
+    /* Overflow fix — content scrolls horizontally if truly too wide */
+    overflow: hidden;
+    max-width: 100%;
+    box-sizing: border-box;
+}
+.report-wrap.blue   { border-left: 4px solid #2563eb; }
+.report-wrap.green  { border-left: 4px solid #16a34a; }
+.report-wrap.amber  { border-left: 4px solid #d97706; }
+.report-wrap.red    { border-left: 4px solid #dc2626; }
+.report-wrap.purple { border-left: 4px solid #7c3aed; }
+.report-wrap.lime   { border-left: 4px solid #65a30d; }
+.report-wrap.teal   { border-left: 4px solid #0d9488; }
+.report-wrap.cyan   { border-left: 4px solid #0284c7; }
+.report-wrap.orange { border-left: 4px solid #ea580c; }
+.report-wrap.rose   { border-left: 4px solid #e11d48; }
+.report-wrap.pink   { border-left: 4px solid #db2777; }
 
-/* ── Section label ── */
-.sec-label{font-size:0.65rem;font-weight:600;letter-spacing:2px;text-transform:uppercase;
-           color:#374151;border-bottom:1px solid #181830;padding-bottom:6px;margin:18px 0 10px;}
+/* Everything inside report — enforce readable prose */
+.report-wrap * {
+    font-style: normal !important;
+    max-width: 100% !important;
+    word-wrap: break-word !important;
+    overflow-wrap: break-word !important;
+}
+.report-wrap p, .report-wrap li {
+    color: #334155 !important;
+    line-height: 1.8 !important;
+    font-size: 0.93rem !important;
+    font-style: normal !important;
+    margin: 6px 0 !important;
+}
+.report-wrap h1,.report-wrap h2,.report-wrap h3,.report-wrap h4 {
+    color: #0f172a !important;
+    font-weight: 700 !important;
+    font-style: normal !important;
+    margin: 18px 0 6px !important;
+    padding-bottom: 4px !important;
+}
+.report-wrap h2 { border-bottom: 1px solid #f1f5f9; }
+.report-wrap h3 { color: #1e40af !important; font-size: 0.95rem !important; }
+.report-wrap strong, .report-wrap b { color: #0f172a !important; font-weight: 700 !important; }
+.report-wrap em { font-style: normal !important; color: #334155 !important; }
+.report-wrap code {
+    background: #f1f5f9 !important; color: #0f172a !important;
+    padding: 1px 6px !important; border-radius: 4px !important;
+    font-family: 'JetBrains Mono', monospace !important;
+    font-size: 0.84em !important;
+    word-break: break-all !important;
+}
+.report-wrap pre {
+    background: #f8fafc !important; border: 1px solid #e2e8f0 !important;
+    border-radius: 6px !important; padding: 12px 16px !important;
+    overflow-x: auto !important; max-width: 100% !important;
+    white-space: pre-wrap !important; word-break: break-word !important;
+}
+.report-wrap table {
+    width: 100% !important; border-collapse: collapse !important;
+    font-size: 0.87rem !important; margin: 12px 0 !important;
+    display: block !important; overflow-x: auto !important;
+}
+.report-wrap th {
+    background: #f1f5f9 !important; color: #0f172a !important;
+    font-weight: 600 !important; padding: 8px 12px !important;
+    text-align: left !important; border: 1px solid #e2e8f0 !important;
+    white-space: nowrap !important;
+}
+.report-wrap td {
+    padding: 7px 12px !important; border: 1px solid #e2e8f0 !important;
+    color: #334155 !important; vertical-align: top !important;
+}
+.report-wrap tr:nth-child(even) td { background: #f8fafc !important; }
+.report-wrap ul, .report-wrap ol { padding-left: 20px !important; margin: 8px 0 !important; }
+.report-wrap li { color: #334155 !important; margin: 4px 0 !important; }
+.report-wrap blockquote {
+    border-left: 3px solid #2563eb !important; padding: 8px 14px !important;
+    margin: 10px 0 !important; background: #eff6ff !important;
+    border-radius: 0 6px 6px 0 !important;
+}
+.report-wrap blockquote * { color: #1e40af !important; font-style: normal !important; }
+/* Long URLs and hashes don't overflow */
+.report-wrap a { word-break: break-all !important; color: #2563eb !important; }
 
-/* ── Scan status bar ── */
-.scan-status{background:#0a0b14;border:1px solid #181830;border-radius:6px;
-             padding:10px 16px;font-size:0.8rem;color:#4a5568;margin:10px 0;}
+/* ══ SECTION LABEL ══ */
+.sec-label {
+    font-size: 0.65rem; font-weight: 700; letter-spacing: 2px;
+    text-transform: uppercase; color: #94a3b8 !important;
+    border-bottom: 1px solid #f1f5f9; padding-bottom: 7px; margin: 20px 0 12px;
+}
 
-/* ── Alert boxes ── */
-.alert-ok{background:#052e1c;border:1px solid #22c55e;border-radius:6px;
-          padding:10px 14px;margin:6px 0;font-size:0.82rem;color:#86efac;}
-.alert-warn{background:#2e1505;border:1px solid #f59e0b;border-radius:6px;
-            padding:10px 14px;margin:6px 0;font-size:0.82rem;color:#fbbf24;}
+/* ══ SCAN STATUS ══ */
+.scan-status {
+    background: #f0f9ff; border: 1px solid #bae6fd; border-radius: 7px;
+    padding: 10px 16px; font-size: 0.8rem; color: #0369a1 !important; margin: 10px 0;
+}
 
-/* ── Stat cards ── */
-.stat-row{display:flex;gap:8px;flex-wrap:wrap;margin:10px 0;}
-.stat-card{background:#0d0e1a;border:1px solid #181830;border-radius:7px;
-           padding:10px 14px;flex:1;min-width:100px;}
-.slbl{font-size:0.62rem;color:#374151;text-transform:uppercase;letter-spacing:1px;display:block;margin-bottom:3px;}
-.sval{font-size:1.1rem;font-weight:700;color:#f0f2f5;font-family:'JetBrains Mono',monospace;}
-.sval.g{color:#22c55e;}.sval.r{color:#ef4444;}.sval.a{color:#f59e0b;}
+/* ══ ALERTS ══ */
+.alert-ok {
+    background: #f0fdf4; border: 1px solid #86efac; border-radius: 7px;
+    padding: 10px 14px; margin: 6px 0; font-size: 0.83rem; color: #166534 !important;
+}
+.alert-warn {
+    background: #fffbeb; border: 1px solid #fcd34d; border-radius: 7px;
+    padding: 10px 14px; margin: 6px 0; font-size: 0.83rem; color: #92400e !important;
+}
 
-/* ── News item ── */
-.news-item{padding:8px 0;border-bottom:1px solid #181830;}
-.news-title{color:#c9d1df;font-size:0.83rem;font-weight:500;display:block;}
-.news-src{color:#374151;font-size:0.7rem;display:block;margin-top:2px;}
+/* ══ STAT CARDS ══ */
+.stat-row { display: flex; gap: 10px; flex-wrap: wrap; margin: 12px 0; }
+.stat-card {
+    background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px;
+    padding: 12px 16px; flex: 1; min-width: 110px;
+}
+.slbl { font-size: 0.62rem; color: #94a3b8 !important; text-transform: uppercase;
+        letter-spacing: 1px; display: block; margin-bottom: 3px; font-weight: 600; }
+.sval { font-size: 1.1rem; font-weight: 700; color: #0f172a !important;
+        font-family: 'JetBrains Mono', monospace; }
+.sval.g { color: #16a34a !important; }
+.sval.r { color: #dc2626 !important; }
+.sval.a { color: #d97706 !important; }
 
-/* ── Tabs ── */
-[data-testid="stTabs"] button{font-size:0.78rem !important;font-weight:500 !important;}
-[data-testid="stTabs"] button[aria-selected="true"]{font-weight:600 !important;color:#f0f2f5 !important;}
-[data-testid="stTabs"] [role="tablist"]{border-bottom:1px solid #181830;gap:2px;}
+/* ══ NEWS ══ */
+.news-item { padding: 9px 0; border-bottom: 1px solid #f1f5f9; }
+.news-title { color: #0f172a !important; font-size: 0.84rem; font-weight: 500; display: block; }
+.news-src   { color: #94a3b8 !important; font-size: 0.71rem; display: block; margin-top: 2px; }
 
-/* ── Inputs ── */
+/* ══ TABS ══ */
+[data-testid="stTabs"] button {
+    font-size: 0.8rem !important; font-weight: 500 !important;
+    color: #64748b !important; padding: 7px 16px !important;
+}
+[data-testid="stTabs"] button[aria-selected="true"] {
+    font-weight: 700 !important; color: #0f172a !important;
+}
+[data-testid="stTabs"] [role="tablist"] { border-bottom: 2px solid #f1f5f9; }
+
+/* ══ INPUTS — white bg ══ */
+.stTextInput input, .stTextArea textarea, input, textarea {
+    background: #ffffff !important;
+    border: 1.5px solid #e2e8f0 !important;
+    color: #0f172a !important;
+    border-radius: 8px !important;
+    font-size: 0.9rem !important;
+    font-style: normal !important;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.04) !important;
+}
+.stTextInput input:focus, .stTextArea textarea:focus {
+    border-color: #2563eb !important;
+    box-shadow: 0 0 0 3px rgba(37,99,235,0.1) !important;
+}
 [data-testid="stSidebar"] .stTextInput input,
-[data-testid="stSidebar"] .stTextArea textarea{
-    background:#0f1020 !important;border:1px solid #1e2340 !important;color:#c9d1df !important;}
-.stTextInput input,.stTextArea textarea{
-    background:#0d0e1a !important;border:1px solid #1e2340 !important;color:#e1e4e8 !important;}
+[data-testid="stSidebar"] .stTextArea textarea {
+    background: #ffffff !important;
+    border-color: #e2e8f0 !important;
+    color: #334155 !important;
+}
 
-/* ── Mobile ── */
-@media(max-width:768px){
-    .block-container{padding:0.8rem 0.8rem 2rem;}
-    .report{padding:14px 16px;font-size:0.86rem;}
-    .macro-strip{gap:2px;}
-    .mbox{padding:6px 8px;}
-    .sig-card{padding:10px 12px;}
-    .topbar{flex-direction:column;align-items:flex-start;gap:4px;}
+/* ══ STREAMLIT COMPONENT FIXES ══ */
+[data-testid="stDataFrame"] { border: 1px solid #e2e8f0 !important; border-radius: 8px !important; }
+[data-testid="stMetric"] { background: #f8fafc !important; border: 1px solid #e2e8f0 !important; border-radius: 8px !important; padding: 12px !important; }
+[data-testid="stMetricValue"] { color: #0f172a !important; font-weight: 700 !important; }
+[data-testid="stMetricLabel"] { color: #64748b !important; font-size: 0.8rem !important; }
+[data-testid="stExpander"] { border: 1px solid #e2e8f0 !important; border-radius: 8px !important; }
+div[data-testid="stMarkdownContainer"] * { font-style: normal !important; }
+div[data-testid="stMarkdownContainer"] em { font-style: normal !important; color: #334155 !important; }
+[data-testid="stStatusWidget"] { border-radius: 8px !important; }
+.stSpinner > div { color: #2563eb !important; }
+div.stButton > button {
+    border-radius: 8px !important; font-weight: 600 !important;
+    font-style: normal !important; letter-spacing: 0 !important;
+}
+div.stButton > button[kind="primary"] {
+    background: #2563eb !important; border-color: #2563eb !important; color: #fff !important;
+}
+div.stButton > button[kind="primary"]:hover {
+    background: #1d4ed8 !important; border-color: #1d4ed8 !important;
+}
+
+/* ══ MOBILE ══ */
+@media (max-width: 768px) {
+    .block-container { padding: 0.8rem 0.9rem 2rem !important; }
+    .report-wrap { padding: 16px 18px !important; font-size: 0.87rem !important; }
+    .macro-strip { gap: 4px; }
+    .mbox { min-width: 70px; padding: 7px 8px; }
+    .sig-card { padding: 12px 14px; }
+    .topbar { flex-direction: column; align-items: flex-start; gap: 4px; }
+    .stat-row { gap: 6px; }
+    .stat-card { min-width: 90px; }
+    h1 { font-size: 1.4rem !important; }
+    h2 { font-size: 1.1rem !important; }
+    h3 { font-size: 0.95rem !important; }
 }
 </style>
 """, unsafe_allow_html=True)
@@ -1015,15 +1177,40 @@ def render_signal_card(sig, idx):
     <span class="sig-ticker">{sig['ticker']}</span>
   </div>
   <div class="sig-title">{sig['title']}</div>
-  <div class="sig-title" style="color:#4a5568;font-size:0.78rem">{sig['detail']}</div>
+  <div class="sig-detail">{sig['detail']}</div>
   <div class="sig-supply">↳ <span>{sig['supply_hint']}</span></div>
   <div class="sig-meta">{sig.get('ts','')[:16].replace('T',' ')} UTC</div>
 </div>""", unsafe_allow_html=True)
     return st.button(f"→ Deep Dive", key=f"dd_{sig['id']}_{idx}", use_container_width=False)
 
 def show_result(text, color="blue"):
-    st.markdown(f'<div class="report {color}"></div>', unsafe_allow_html=True)
+    """
+    Render AI report inside a properly styled container.
+    Uses a border-coloured wrapper div then st.markdown for Streamlit
+    to process markdown (headers, bold, lists) correctly.
+    The wrapper provides overflow protection, no-italic, and white bg.
+    """
+    # Open the container
+    st.markdown(f'''<div class="report-wrap {color}" style="
+        background:#ffffff;
+        border:1px solid #e2e8f0;
+        border-left:4px solid {
+            {"blue":"#2563eb","green":"#16a34a","amber":"#d97706","red":"#dc2626",
+             "purple":"#7c3aed","lime":"#65a30d","teal":"#0d9488","cyan":"#0284c7",
+             "orange":"#ea580c","rose":"#e11d48","pink":"#db2777"}.get(color,"#2563eb")
+        };
+        border-radius:10px;
+        padding:24px 28px;
+        margin:14px 0;
+        box-shadow:0 1px 4px rgba(0,0,0,0.05);
+        overflow:hidden;
+        max-width:100%;
+        box-sizing:border-box;
+    "></div>''', unsafe_allow_html=True)
+    # Render content as native Streamlit markdown — headers, bold, lists work
     st.markdown(text)
+    # Hard reset after to prevent style bleed
+    st.markdown('<div style="clear:both"></div>', unsafe_allow_html=True)
 
 def dl_tg(text, prefix):
     c1,c2 = st.columns(2)
@@ -1068,8 +1255,8 @@ n_high  = sum(1 for s in feed if s["score"]>=7.5)
 
 st.markdown(f"""
 <div class="topbar">
-  <div class="logo">◈ Alpha<span>Machine</span> <span style="font-size:0.7rem;font-weight:400;color:#374151;letter-spacing:0;"> v6</span></div>
-  <div class="topbar-meta">{datetime.now().strftime("%d %b %Y · %H:%M UTC")} · {n_sigs} signals · {n_high} high-conviction</div>
+  <div class="logo">◈ Alpha<span>Machine</span> <span style="font-size:0.7rem;font-weight:400;color:#64748b;letter-spacing:0;"> v6</span></div>
+  <div class="topbar-meta" style="color:#94a3b8">{datetime.now().strftime("%d %b %Y · %H:%M UTC")} · {n_sigs} signals · {n_high} high-conviction</div>
 </div>""", unsafe_allow_html=True)
 
 # Macro strip
@@ -1099,7 +1286,7 @@ st.markdown(f"""
 <div class="statusbar">
   <span class="sitem"><span class="{'dot-green' if gemini_key else 'dot-red'}"></span>AI Engine</span>
   <span class="sitem"><span class="dot-blue"></span>Pentagon: USASpending.gov</span>
-  <span class="sitem"><span class="dot-purple" style="background:#a78bfa"></span>Patents: USPTO</span>
+  <span class="sitem"><span class="dot-purple"></span>Patents: USPTO</span>
   <span class="sitem"><span class="dot-green"></span>Insider: EDGAR Form 4</span>
   <span class="sitem"><span class="dot-amber"></span>Dark Money: Options Chain</span>
   <span class="sitem" style="margin-left:auto">Last scan: {last_str} · Next: {next_scan_str}</span>
@@ -1116,7 +1303,7 @@ with sc1:
         label_visibility="collapsed", key="ti_universal_search")
 with sc2:
     search_btn = st.button("Search →", type="primary", key="btn_universal_search", use_container_width=True)
-st.markdown("""<div class="search-hint">
+st.markdown("""<div class="search-hint" style="font-size:0.73rem;color:#64748b;margin-top:10px;line-height:1.65">
   <b>Ticker:</b> NVDA → full deep dive · DCF · supply chain · insider · options<br>
   <b>Theme:</b> Solid State Batteries → full sector map + supply chain + asymmetric bets<br>
   <b>Scenario:</b> Taiwan conflict → geo trade with winners, losers, hedges<br>
@@ -1134,7 +1321,7 @@ if search_btn and search_input.strip():
 
 if st.session_state.get("search_result"):
     q = st.session_state.get("search_query","")
-    st.markdown(f'<div class="sec-label">Intelligence Report — {q}</div>', unsafe_allow_html=True)
+    st.markdown(f'<div class="sec-label" style="font-size:0.65rem;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:#94a3b8;border-bottom:1px solid #f1f5f9;padding-bottom:7px;margin:20px 0 12px">Intelligence Report — {q}</div>', unsafe_allow_html=True)
     show_result(st.session_state["search_result"], "blue")
     dl_tg(st.session_state["search_result"], f"search_{q[:20].replace(' ','_')}")
     if st.button("✕ Clear search", key="btn_clear_search"):
@@ -1162,7 +1349,7 @@ with tab_feed:
         min_score_f  = st.slider("Min score", 0.0, 10.0, 5.0, 0.5, key="sl_min_score_feed")
     with fc4:
         if should_auto_scan() and gemini_key and not feed:
-            st.markdown('<div class="scan-status">🔄 Auto-scanning on first load...</div>', unsafe_allow_html=True)
+            st.markdown('<div class="scan-status" style="background:#f0f9ff;border:1px solid #bae6fd;border-radius:7px;padding:10px 16px;font-size:0.8rem;color:#0369a1;margin:10px 0">🔄 Auto-scanning on first load...</div>', unsafe_allow_html=True)
 
     # Auto-scan trigger
     if should_auto_scan() and gemini_key and (run_scan_btn or not feed):
@@ -1222,7 +1409,7 @@ with tab_feed:
         # Deep dive panel
         if st.session_state.get("deep_dive_sig"):
             sig = st.session_state["deep_dive_sig"]
-            st.markdown(f'<div class="sec-label">Deep Dive — {sig["ticker"]} · {TYPE_LABELS.get(sig["type"],"")}</div>',
+            st.markdown(f'<div class="sec-label" style="font-size:0.65rem;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:#94a3b8;border-bottom:1px solid #f1f5f9;padding-bottom:7px;margin:20px 0 12px">Deep Dive — {sig["ticker"]} · {TYPE_LABELS.get(sig["type"],"")}</div>',
                         unsafe_allow_html=True)
             if key_check():
                 with st.spinner(f"Running deep dive on {sig['ticker']}..."):
@@ -1295,7 +1482,7 @@ with tab_adv:
     # ── DCF ────────────────────────────────────────────────────────────────────
     with at_dcf:
         st.markdown("**Quantitative DCF** — numpy Bear/Base/Bull · FMP real financials")
-        if fmp_key: st.markdown('<div class="alert-ok">✓ FMP connected — real financial data</div>', unsafe_allow_html=True)
+        if fmp_key: st.markdown('<div class="alert-ok" style="background:#f0fdf4;border:1px solid #86efac;border-radius:7px;padding:10px 14px;margin:6px 0;font-size:0.83rem;color:#166534">✓ FMP connected — real financial data</div>', unsafe_allow_html=True)
         c1,c2=st.columns([3,1])
         with c1: dcf_t=st.text_input("Ticker",placeholder="NVDA · PLTR · AXTI",label_visibility="collapsed",key="ti_dcf")
         with c2: dcf_r=st.button("Run DCF →",type="primary",key="btn_dcf")
@@ -1319,7 +1506,7 @@ with tab_adv:
                     dcf_results=dcf_valuation(rev_latest,max(rev_growth,0.05),max(fcf_margin,0.02),0.10,0.03,shares,net_debt)
                 except: pass
             if dcf_results:
-                st.markdown('<div class="sec-label">DCF — numpy calculated</div>',unsafe_allow_html=True)
+                st.markdown('<div class="sec-label" style="font-size:0.65rem;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:#94a3b8;border-bottom:1px solid #f1f5f9;padding-bottom:7px;margin:20px 0 12px">DCF — numpy calculated</div>',unsafe_allow_html=True)
                 cols=st.columns(4)
                 for col,(sc,lbl) in zip(cols,[("Bear","Bear FV"),("Base","Base FV"),("Bull","Bull FV")]):
                     fv=dcf_results[sc]["FV_per_share"]
@@ -1361,11 +1548,11 @@ with tab_adv:
                         if c: pd_data[sym]=c
                     corr=calc_correlation_matrix(pd_data)
                     if not corr.empty:
-                        st.markdown('<div class="sec-label">Correlation Matrix</div>',unsafe_allow_html=True)
+                        st.markdown('<div class="sec-label" style="font-size:0.65rem;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:#94a3b8;border-bottom:1px solid #f1f5f9;padding-bottom:7px;margin:20px 0 12px">Correlation Matrix</div>',unsafe_allow_html=True)
                         def _cc(v):
                             if not isinstance(v,(int,float)) or abs(v)==1: return ""
                             if abs(v)>0.85: return "background:#2e0505;color:#fca5a5;font-weight:600"
-                            if abs(v)>0.70: return "background:#2e1505;color:#fbbf24"
+                            if abs(v)>0.70: return "background:#fffbeb;color:#fbbf24"
                             return ""
                         st.dataframe(corr.style.map(_cc),width="stretch")
                 with st.spinner("Running stress test..."):
@@ -1533,7 +1720,7 @@ with tab_adv:
     # ── SEC Filings ────────────────────────────────────────────────────────────
     with at_sec:
         st.markdown("**SEC Filing Scanner** — Form 4 insider · 8-K events · 10-Q red flags")
-        if finnhub_key: st.markdown('<div class="alert-ok">✓ Finnhub — real insider data</div>',unsafe_allow_html=True)
+        if finnhub_key: st.markdown('<div class="alert-ok" style="background:#f0fdf4;border:1px solid #86efac;border-radius:7px;padding:10px 14px;margin:6px 0;font-size:0.83rem;color:#166534">✓ Finnhub — real insider data</div>',unsafe_allow_html=True)
         c1,c2=st.columns([3,1])
         with c1: sec_t=st.text_input("Ticker",placeholder="PLTR · NVDA · RKLB",label_visibility="collapsed",key="ti_sec")
         with c2: sec_r=st.button("Scan Filings →",type="primary",key="btn_sec")
@@ -1637,7 +1824,7 @@ with tab_adv:
                     if fired: alerts.append({"ticker":sym,"price":p,"signals":fired})
                 if alerts:
                     for a in alerts:
-                        st.markdown(f'<div class="alert-ok"><strong>{a["ticker"]}</strong> @ ${a["price"]} — {", ".join(a["signals"])}</div>',unsafe_allow_html=True)
+                        st.markdown(f'<div class="alert-ok" style="background:#f0fdf4;border:1px solid #86efac;border-radius:7px;padding:10px 14px;margin:6px 0;font-size:0.83rem;color:#166534"><strong>{a["ticker"]}</strong> @ ${a["price"]} — {", ".join(a["signals"])}</div>',unsafe_allow_html=True)
                     alert_str="\n".join([f"• {a['ticker']} @ ${a['price']}: {', '.join(a['signals'])}" for a in alerts])
                     with st.spinner("AI triage..."):
                         ai=call_gemini(SP["cio"],f"ALERTS:\n{alert_str}\n\nFor each: actionable NOW or false positive? Urgency: ACT/WATCH/LOW. TOP PRIORITY: [ticker] — [one sentence]",gemini_key)
@@ -1646,7 +1833,7 @@ with tab_adv:
                         send_telegram(f"◈ WATCHDOG\n{datetime.now():%Y-%m-%d %H:%M}\n\n{alert_str}\n\n{ai[:800]}",tg_token,tg_chat)
                         st.success("Sent to Telegram")
                     dl_tg(ai,"watchdog")
-                else: st.markdown('<div class="alert-ok">✓ No triggers fired</div>',unsafe_allow_html=True)
+                else: st.markdown('<div class="alert-ok" style="background:#f0fdf4;border:1px solid #86efac;border-radius:7px;padding:10px 14px;margin:6px 0;font-size:0.83rem;color:#166534">✓ No triggers fired</div>',unsafe_allow_html=True)
 
     # ── Backtest ───────────────────────────────────────────────────────────────
     with at_bt:
